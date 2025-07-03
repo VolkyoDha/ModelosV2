@@ -1,0 +1,218 @@
+<div class="schedules-summary">
+  <div class="page-header">
+    <h2>Resumen de Horarios</h2>
+    <div class="header-actions">
+      <a href="/horarios" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Volver
+      </a>
+      <button class="btn btn-primary" onclick="exportSummary()">
+        <i class="fas fa-download"></i> Exportar
+      </button>
+    </div>
+  </div>
+
+  <div class="summary-content">
+    <!-- Estadísticas Generales -->
+    <div class="general-stats">
+      <h3>Estadísticas Generales</h3>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-clock"></i>
+          </div>
+          <div class="stat-content">
+            <h4><%= resumen.totalHoras %></h4>
+            <p>Total de Horas Asignadas</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-users"></i>
+          </div>
+          <div class="stat-content">
+            <h4><%= resumen.profesores.length %></h4>
+            <p>Profesores Activos</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-book"></i>
+          </div>
+          <div class="stat-content">
+            <h4><%= resumen.materias.length %></h4>
+            <p>Materias en Sistema</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
+          <div class="stat-content">
+            <h4><%= conflictos.length %></h4>
+            <p>Conflictos Detectados</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Distribución por Día -->
+    <div class="distribution-section">
+      <h3>Distribución de Horas por Día</h3>
+      <div class="distribution-chart">
+        <% const diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']; %>
+        <% diasSemana.forEach(dia => { %>
+          <div class="day-distribution">
+            <div class="day-header">
+              <h4><%= dia %></h4>
+              <span class="day-hours"><%= resumen.distribucionPorDia[dia] || 0 %> horas</span>
+            </div>
+            <div class="day-bar">
+              <div class="bar-fill" style="width: <%= Math.min(((resumen.distribucionPorDia[dia] || 0) / Math.max(...Object.values(resumen.distribucionPorDia))) * 100, 100) %>%"></div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+
+    <!-- Distribución por Tipo -->
+    <div class="type-distribution">
+      <h3>Distribución por Tipo de Clase</h3>
+      <div class="type-grid">
+        <div class="type-card">
+          <div class="type-icon theory">
+            <i class="fas fa-chalkboard"></i>
+          </div>
+          <div class="type-content">
+            <h4><%= resumen.distribucionPorTipo.teoria || 0 %> horas</h4>
+            <p>Teoría</p>
+            <div class="type-percentage">
+              <%= Math.round(((resumen.distribucionPorTipo.teoria || 0) / resumen.totalHoras) * 100) %>%
+            </div>
+          </div>
+        </div>
+
+        <div class="type-card">
+          <div class="type-icon practice">
+            <i class="fas fa-tools"></i>
+          </div>
+          <div class="type-content">
+            <h4><%= resumen.distribucionPorTipo.practica || 0 %> horas</h4>
+            <p>Práctica</p>
+            <div class="type-percentage">
+              <%= Math.round(((resumen.distribucionPorTipo.practica || 0) / resumen.totalHoras) * 100) %>%
+            </div>
+          </div>
+        </div>
+
+        <div class="type-card">
+          <div class="type-icon lab">
+            <i class="fas fa-flask"></i>
+          </div>
+          <div class="type-content">
+            <h4><%= resumen.distribucionPorTipo.laboratorio || 0 %> horas</h4>
+            <p>Laboratorio</p>
+            <div class="type-percentage">
+              <%= Math.round(((resumen.distribucionPorTipo.laboratorio || 0) / resumen.totalHoras) * 100) %>%
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profesores con Mayor Carga -->
+    <div class="professors-load">
+      <h3>Profesores con Mayor Carga Horaria</h3>
+      <div class="professors-list">
+        <% resumen.profesores.sort((a, b) => b.horasAsignadas - a.horasAsignadas).slice(0, 10).forEach(profesor => { %>
+          <div class="professor-load-item">
+            <div class="professor-info">
+              <h5><%= profesor.nombre %></h5>
+              <span class="professor-specialty"><%= profesor.especialidad %></span>
+            </div>
+            <div class="load-info">
+              <div class="load-bar">
+                <div class="load-fill" style="width: <%= Math.min((profesor.horasAsignadas / profesor.maxHoras) * 100, 100) %>%"></div>
+              </div>
+              <div class="load-stats">
+                <span class="assigned-hours"><%= profesor.horasAsignadas %>h</span>
+                <span class="max-hours">/ <%= profesor.maxHoras %>h</span>
+                <span class="percentage"><%= Math.round((profesor.horasAsignadas / profesor.maxHoras) * 100) %>%</span>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+
+    <!-- Materias por Estado -->
+    <div class="subjects-status">
+      <h3>Estado de Materias</h3>
+      <div class="status-grid">
+        <div class="status-card completed">
+          <div class="status-icon">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <div class="status-content">
+            <h4><%= resumen.materias.filter(m => m.completado).length %></h4>
+            <p>Completadas</p>
+          </div>
+        </div>
+
+        <div class="status-card pending">
+          <div class="status-icon">
+            <i class="fas fa-clock"></i>
+          </div>
+          <div class="status-content">
+            <h4><%= resumen.materias.filter(m => !m.completado).length %></h4>
+            <p>Pendientes</p>
+          </div>
+        </div>
+
+        <div class="status-card partial">
+          <div class="status-icon">
+            <i class="fas fa-hourglass-half"></i>
+          </div>
+          <div class="status-content">
+            <h4><%= resumen.materias.filter(m => m.horasAsignadas > 0 && !m.completado).length %></h4>
+            <p>Parcialmente Asignadas</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Conflictos Detectados -->
+    <% if (conflictos && conflictos.length > 0) { %>
+    <div class="conflicts-summary">
+      <h3>Conflictos Detectados</h3>
+      <div class="conflicts-list">
+        <% conflictos.slice(0, 10).forEach(conflicto => { %>
+          <div class="conflict-item">
+            <div class="conflict-icon">
+              <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="conflict-content">
+              <p><%= conflicto.mensaje %></p>
+              <% if (conflicto.horario1 && conflicto.horario2) { %>
+                <small>
+                  Conflicto: <%= conflicto.horario1.dia %> <%= conflicto.horario1.horaInicio %>-<%= conflicto.horario1.horaFin %> 
+                  vs <%= conflicto.horario2.dia %> <%= conflicto.horario2.horaInicio %>-<%= conflicto.horario2.horaFin %>
+                </small>
+              <% } %>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+    <% } %>
+  </div>
+</div>
+
+<script>
+function exportSummary() {
+  // Implementar exportación de resumen
+  alert('Funcionalidad de exportación en desarrollo');
+}
+</script> 

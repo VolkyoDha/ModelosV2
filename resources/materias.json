@@ -1,0 +1,165 @@
+[
+  {
+    "id": "1",
+    "codigo": "CS101",
+    "nombre": "Introducción a la Programación",
+    "creditos": 4,
+    "semestre": 1,
+    "horasTeoria": 3,
+    "horasPractica": 2,
+    "horasLaboratorio": 0,
+    "prerequisitos": [],
+    "descripcion": "Fundamentos de programación y algoritmos básicos",
+    "createdAt": "2024-01-15T10:00:00.000Z"
+  },
+  {
+    "id": "2",
+    "codigo": "CS102",
+    "nombre": "Matemáticas Discretas",
+    "creditos": 3,
+    "semestre": 1,
+    "horasTeoria": 3,
+    "horasPractica": 1,
+    "horasLaboratorio": 0,
+    "prerequisitos": [],
+    "descripcion": "Lógica matemática, teoría de conjuntos y combinatoria",
+    "createdAt": "2024-01-15T10:00:00.000Z"
+  },
+  {
+    "id": "3",
+    "codigo": "CS201",
+    "nombre": "Estructuras de Datos",
+    "creditos": 4,
+    "semestre": 2,
+    "horasTeoria": 2,
+    "horasPractica": 2,
+    "horasLaboratorio": 1,
+    "prerequisitos": [
+      "1"
+    ],
+    "descripcion": "Arrays, listas, pilas, colas y árboles",
+    "createdAt": "2024-01-15T10:00:00.000Z"
+  },
+  {
+    "id": "4",
+    "codigo": "CS202",
+    "nombre": "Cálculo Diferencial",
+    "creditos": 4,
+    "semestre": 2,
+    "horasTeoria": 4,
+    "horasPractica": 1,
+    "horasLaboratorio": 0,
+    "prerequisitos": [
+      "2"
+    ],
+    "descripcion": "Límites, derivadas y aplicaciones",
+    "createdAt": "2024-01-15T10:00:00.000Z"
+  },
+  {
+    "id": "5",
+    "codigo": "CS301",
+    "nombre": "Algoritmos y Complejidad",
+    "creditos": 4,
+    "semestre": 3,
+    "horasTeoria": 3,
+    "horasPractica": 2,
+    "horasLaboratorio": 0,
+    "prerequisitos": [
+      "3"
+    ],
+    "descripcion": "Análisis de algoritmos y complejidad computacional",
+    "createdAt": "2024-01-15T10:00:00.000Z"
+  },
+  {
+    "id": "6",
+    "codigo": "CS302",
+    "nombre": "Bases de Datos",
+    "creditos": 4,
+    "semestre": 3,
+    "horasTeoria": 2,
+    "horasPractica": 1,
+    "horasLaboratorio": 2,
+    "prerequisitos": [
+      "1"
+    ],
+    "descripcion": "Diseño y gestión de bases de datos relacionales",
+    "createdAt": "2024-01-15T10:00:00.000Z"
+  },
+  {
+    "id": "7",
+    "codigo": "CS401",
+    "nombre": "Ingeniería de Software",
+    "creditos": 4,
+    "semestre": 4,
+    "horasTeoria": 2,
+    "horasPractica": 2,
+    "horasLaboratorio": 1,
+    "prerequisitos": [
+      "3",
+      "6"
+    ],
+    "descripcion": "Metodologías de desarrollo de software",
+    "createdAt": "2024-01-15T10:00:00.000Z"
+  },
+  {
+    "id": "8",
+    "codigo": "CS402",
+    "nombre": "Redes de Computadoras",
+    "creditos": 4,
+    "semestre": 4,
+    "horasTeoria": 2,
+    "horasPractica": 1,
+    "horasLaboratorio": 2,
+    "prerequisitos": [
+      "1"
+    ],
+    "descripcion": "Protocolos de red y comunicación de datos",
+    "createdAt": "2024-01-15T10:00:00.000Z"
+  },
+  {
+    "id": "9",
+    "codigo": "CS501",
+    "nombre": "Inteligencia Artificial",
+    "creditos": 4,
+    "semestre": 5,
+    "horasTeoria": 3,
+    "horasPractica": 1,
+    "horasLaboratorio": 1,
+    "prerequisitos": [
+      "5"
+    ],
+    "descripcion": "Algoritmos de IA y machine learning",
+    "createdAt": "2024-01-15T10:00:00.000Z"
+  },
+  {
+    "id": "10",
+    "codigo": "CS502",
+    "nombre": "Sistemas Operativos",
+    "creditos": 4,
+    "semestre": 5,
+    "horasTeoria": 2,
+    "horasPractica": 1,
+    "horasLaboratorio": 2,
+    "prerequisitos": [
+      "3"
+    ],
+    "descripcion": "Gestión de procesos, memoria y archivos",
+    "createdAt": "2024-01-15T10:00:00.000Z"
+  },
+  {
+    "id": "11",
+    "codigo": "CS601",
+    "nombre": "Proyecto de Grado",
+    "creditos": 6,
+    "semestre": 6,
+    "horasTeoria": 1,
+    "horasPractica": 2,
+    "horasLaboratorio": 2,
+    "prerequisitos": [
+      "7",
+      "9"
+    ],
+    "descripcion": "Desarrollo de proyecto final de carrera",
+    "createdAt": "2024-01-15T10:00:00.000Z"
+  }
+]

@@ -1,0 +1,209 @@
+<div class="schedules-main">
+  <div class="page-header">
+    <h2>Gestión de Horarios</h2>
+    <div class="header-actions">
+      <a href="/horarios/calcular" class="btn btn-primary">
+        <i class="fas fa-calculator"></i> Calcular Horarios
+      </a>
+      <a href="/horarios/resumen" class="btn btn-secondary">
+        <i class="fas fa-chart-bar"></i> Ver Resumen
+      </a>
+    </div>
+  </div>
+
+  <div class="schedules-overview">
+    <div class="overview-grid">
+      <div class="overview-card">
+        <div class="overview-icon">
+          <i class="fas fa-clock"></i>
+        </div>
+        <div class="overview-content">
+          <h3><%= totalHorarios %></h3>
+          <p>Horarios Asignados</p>
+        </div>
+      </div>
+
+      <div class="overview-card">
+        <div class="overview-icon">
+          <i class="fas fa-users"></i>
+        </div>
+        <div class="overview-content">
+          <h3><%= profesoresConHorarios %></h3>
+          <p>Profesores con Horarios</p>
+        </div>
+      </div>
+
+      <div class="overview-card">
+        <div class="overview-icon">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div class="overview-content">
+          <h3><%= conflictosDetectados %></h3>
+          <p>Conflictos Detectados</p>
+        </div>
+      </div>
+
+      <div class="overview-card">
+        <div class="overview-icon">
+          <i class="fas fa-percentage"></i>
+        </div>
+        <div class="overview-content">
+          <h3><%= porcentajeCompletado %>%</h3>
+          <p>Horarios Completados</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="schedules-content">
+    <div class="content-tabs">
+      <button class="tab-btn active" onclick="showTab('professors')">
+        <i class="fas fa-chalkboard-teacher"></i> Por Profesor
+      </button>
+      <button class="tab-btn" onclick="showTab('subjects')">
+        <i class="fas fa-book"></i> Por Materia
+      </button>
+      <button class="tab-btn" onclick="showTab('weekly')">
+        <i class="fas fa-calendar-week"></i> Vista Semanal
+      </button>
+    </div>
+
+    <div id="professors-tab" class="tab-content active">
+      <div class="professors-schedules">
+        <% profesores.forEach(profesor => { %>
+          <div class="professor-schedule-card">
+            <div class="professor-header">
+              <h4><%= profesor.nombre %> <%= profesor.apellido %></h4>
+              <div class="professor-stats">
+                <span class="hours-badge"><%= profesor.horasAsignadas %> horas</span>
+                <span class="availability-badge <%= profesor.disponible > 0 ? 'available' : 'full' %>">
+                  <%= profesor.disponible > 0 ? 'Disponible' : 'Completo' %>
+                </span>
+              </div>
+            </div>
+            
+            <% if (profesor.horarios && profesor.horarios.length > 0) { %>
+              <div class="schedule-grid">
+                <% const diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']; %>
+                <% diasSemana.forEach(dia => { %>
+                  <% const horariosDia = profesor.horarios.filter(h => h.dia === dia); %>
+                  <div class="day-column">
+                    <h5><%= dia %></h5>
+                    <% if (horariosDia.length > 0) { %>
+                      <% horariosDia.forEach(horario => { %>
+                        <div class="schedule-slot">
+                          <div class="slot-time"><%= horario.horaInicio %>:00 - <%= horario.horaFin %>:00</div>
+                          <div class="slot-subject"><%= horario.materiaNombre || 'Materia' %></div>
+                          <div class="slot-type badge badge-<%= horario.tipo === 'teoria' ? 'primary' : horario.tipo === 'practica' ? 'success' : 'warning' %>">
+                            <%= horario.tipo %>
+                          </div>
+                        </div>
+                      <% }) %>
+                    <% } else { %>
+                      <div class="empty-slot">Sin horarios</div>
+                    <% } %>
+                  </div>
+                <% }) %>
+              </div>
+            <% } else { %>
+              <div class="empty-schedule">
+                <i class="fas fa-clock"></i>
+                <p>Sin horarios asignados</p>
+                <a href="/horarios/calcular" class="btn btn-sm btn-primary">Asignar Horarios</a>
+              </div>
+            <% } %>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+
+    <div id="subjects-tab" class="tab-content">
+      <div class="subjects-schedules">
+        <% materias.forEach(materia => { %>
+          <div class="subject-schedule-card">
+            <div class="subject-header">
+              <h4><%= materia.nombre %></h4>
+              <div class="subject-info">
+                <span class="code-badge"><%= materia.codigo %></span>
+                <span class="semester-badge">Semestre <%= materia.semestre %></span>
+              </div>
+            </div>
+            
+            <div class="subject-stats">
+              <div class="stat-item">
+                <label>Horas Necesarias:</label>
+                <span><%= materia.horasTeoria + materia.horasPractica + materia.horasLaboratorio %> horas</span>
+              </div>
+              <div class="stat-item">
+                <label>Horas Asignadas:</label>
+                <span><%= materia.horasAsignadas || 0 %> horas</span>
+              </div>
+              <div class="stat-item">
+                <label>Estado:</label>
+                <span class="status-badge <%= (materia.horasAsignadas || 0) >= (materia.horasTeoria + materia.horasPractica + materia.horasLaboratorio) ? 'completed' : 'pending' %>">
+                  <%= (materia.horasAsignadas || 0) >= (materia.horasTeoria + materia.horasPractica + materia.horasLaboratorio) ? 'Completado' : 'Pendiente' %>
+                </span>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+
+    <div id="weekly-tab" class="tab-content">
+      <div class="weekly-view">
+        <div class="weekly-grid">
+          <div class="time-column">
+            <div class="time-header">Hora</div>
+            <% for(let hora = 7; hora <= 20; hora++) { %>
+              <div class="time-slot"><%= hora %>:00</div>
+            <% } %>
+          </div>
+          
+          <% const diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']; %>
+          <% diasSemana.forEach(dia => { %>
+            <div class="day-column">
+              <div class="day-header"><%= dia %></div>
+              <% for(let hora = 7; hora <= 20; hora++) { %>
+                <% const horariosHora = allHorarios.filter(h => h.dia === dia && parseInt(h.horaInicio) <= hora && parseInt(h.horaFin) > hora); %>
+                <div class="day-slot <%= horariosHora.length > 0 ? 'occupied' : '' %>">
+                  <% if (horariosHora.length > 0) { %>
+                    <% horariosHora.forEach(horario => { %>
+                      <div class="schedule-item">
+                        <div class="item-subject"><%= horario.materiaNombre %></div>
+                        <div class="item-professor"><%= horario.profesorNombre %></div>
+                        <div class="item-type badge badge-<%= horario.tipo === 'teoria' ? 'primary' : horario.tipo === 'practica' ? 'success' : 'warning' %>">
+                          <%= horario.tipo %>
+                        </div>
+                      </div>
+                    <% }) %>
+                  <% } %>
+                </div>
+              <% } %>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showTab(tabName) {
+  // Ocultar todas las pestañas
+  document.querySelectorAll('.tab-content').forEach(tab => {
+    tab.classList.remove('active');
+  });
+  
+  // Desactivar todos los botones
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  
+  // Mostrar la pestaña seleccionada
+  document.getElementById(tabName + '-tab').classList.add('active');
+  
+  // Activar el botón correspondiente
+  event.target.classList.add('active');
+}
+</script> 

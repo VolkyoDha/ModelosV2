@@ -1,0 +1,117 @@
+<div class="professor-detail">
+  <div class="detail-header">
+    <h2>Detalles del Profesor</h2>
+    <div class="header-actions">
+      <a href="/profesores" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Volver
+      </a>
+      <a href="/profesores/<%= profesor.id %>/edit" class="btn btn-primary">
+        <i class="fas fa-edit"></i> Editar
+      </a>
+    </div>
+  </div>
+
+  <div class="detail-content">
+    <div class="info-grid">
+      <div class="info-card">
+        <h3>Información Personal</h3>
+        <div class="info-item">
+          <label>Nombre:</label>
+          <span><%= profesor.nombre %> <%= profesor.apellido %></span>
+        </div>
+        <div class="info-item">
+          <label>Email:</label>
+          <span><%= profesor.email %></span>
+        </div>
+        <div class="info-item">
+          <label>Especialidad:</label>
+          <span><%= profesor.especialidad %></span>
+        </div>
+        <div class="info-item">
+          <label>Máximo de Horas/Semana:</label>
+          <span><%= profesor.maxHorasSemana %> horas</span>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <h3>Carga Horaria</h3>
+        <div class="info-item">
+          <label>Horas Asignadas:</label>
+          <span><%= cargaHoraria.totalHoras %> horas</span>
+        </div>
+        <div class="info-item">
+          <label>Horas Disponibles:</label>
+          <span><%= cargaHoraria.disponible %> horas</span>
+        </div>
+        <div class="info-item">
+          <label>Porcentaje de Uso:</label>
+          <span><%= Math.round((cargaHoraria.totalHoras / profesor.maxHorasSemana) * 100) %>%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: <%= Math.min((cargaHoraria.totalHoras / profesor.maxHorasSemana) * 100, 100) %>%"></div>
+        </div>
+      </div>
+    </div>
+
+    <% if (profesor.horarios && profesor.horarios.length > 0) { %>
+    <div class="schedules-section">
+      <h3>Horarios Asignados</h3>
+      <div class="schedules-grid">
+        <% const diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']; %>
+        <% diasSemana.forEach(dia => { %>
+          <% const horariosDia = profesor.horarios.filter(h => h.dia === dia); %>
+          <% if (horariosDia.length > 0) { %>
+            <div class="day-schedule">
+              <h4><%= dia %></h4>
+              <% horariosDia.forEach(horario => { %>
+                <div class="schedule-item">
+                  <div class="schedule-time">
+                    <%= horario.horaInicio %>:00 - <%= horario.horaFin %>:00
+                  </div>
+                  <div class="schedule-info">
+                    <span class="materia-name"><%= horario.materiaNombre || 'Materia' %></span>
+                    <span class="schedule-type badge badge-<%= horario.tipo === 'teoria' ? 'primary' : horario.tipo === 'practica' ? 'success' : 'warning' %>">
+                      <%= horario.tipo %>
+                    </span>
+                  </div>
+                </div>
+              <% }) %>
+            </div>
+          <% } %>
+        <% }) %>
+      </div>
+    </div>
+    <% } else { %>
+    <div class="empty-state">
+      <i class="fas fa-clock"></i>
+      <h3>Sin Horarios Asignados</h3>
+      <p>Este profesor aún no tiene horarios asignados.</p>
+      <a href="/horarios" class="btn btn-primary">Asignar Horarios</a>
+    </div>
+    <% } %>
+
+    <% if (conflictos && conflictos.length > 0) { %>
+    <div class="conflicts-section">
+      <h3>Conflictos Detectados</h3>
+      <div class="conflicts-list">
+        <% conflictos.forEach(conflicto => { %>
+          <div class="conflict-item">
+            <div class="conflict-icon">
+              <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="conflict-content">
+              <p><%= conflicto.mensaje %></p>
+              <% if (conflicto.horario1 && conflicto.horario2) { %>
+                <small>
+                  Conflicto: <%= conflicto.horario1.dia %> <%= conflicto.horario1.horaInicio %>-<%= conflicto.horario1.horaFin %> 
+                  vs <%= conflicto.horario2.dia %> <%= conflicto.horario2.horaInicio %>-<%= conflicto.horario2.horaFin %>
+                </small>
+              <% } %>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+    <% } %>
+  </div>
+</div> 

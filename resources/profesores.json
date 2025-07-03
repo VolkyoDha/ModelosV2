@@ -1,0 +1,32 @@
+[
+  {
+    "id": "2",
+    "nombre": "Dra. María",
+    "apellido": "González",
+    "email": "maria.gonzalez@universidad.edu",
+    "especialidad": "Física",
+    "maxHorasSemana": 18,
+    "horarios": [],
+    "createdAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "3",
+    "nombre": "Prof. Carlos",
+    "apellido": "Rodríguez",
+    "email": "carlos.rodriguez@universidad.edu",
+    "especialidad": "Programación",
+    "maxHorasSemana": 22,
+    "horarios": [],
+    "createdAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "1751423071831",
+    "nombre": "Universidad",
+    "apellido": "Ecuador)",
+    "email": "clobodiaz@outlook.com",
+    "especialidad": "Física",
+    "maxHorasSemana": 40,
+    "horarios": [],
+    "createdAt": "2025-07-02T02:24:31.831Z"
+  }
+]

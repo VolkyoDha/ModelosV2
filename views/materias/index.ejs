@@ -1,0 +1,531 @@
+<div class="page-header">
+    <div class="page-title">
+        <h2><i class="fas fa-book"></i> Gestión de Materias</h2>
+        <p>Administra las materias y la malla curricular</p>
+    </div>
+    <div class="page-actions">
+        <a href="/materias/create" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Agregar Materia
+        </a>
+        <a href="/materias/load" class="btn btn-secondary">
+            <i class="fas fa-upload"></i> Cargar Malla
+        </a>
+    </div>
+</div>
+
+<div class="content-section">
+    <% if (materias.length === 0) { %>
+        <div class="empty-state">
+            <i class="fas fa-book-open"></i>
+            <h3>No hay materias registradas</h3>
+            <p>Comienza agregando materias o cargando una malla curricular</p>
+            <div class="empty-actions">
+                <a href="/materias/create" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Agregar Materia
+                </a>
+                <a href="/materias/load" class="btn btn-secondary">
+                    <i class="fas fa-upload"></i> Cargar Malla
+                </a>
+            </div>
+        </div>
+    <% } else { %>
+        <div class="table-container">
+            <div class="table-header">
+                <div class="table-search">
+                    <input type="text" class="form-control" placeholder="Buscar materias..." id="searchInput">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="table-filters">
+                    <select class="form-control" id="semesterFilter">
+                        <option value="">Todos los semestres</option>
+                        <% for(let i = 1; i <= 10; i++) { %>
+                            <option value="<%= i %>">Semestre <%= i %></option>
+                        <% } %>
+                    </select>
+                </div>
+                <div class="table-actions">
+                    <span class="table-count"><%= materias.length %> materias</span>
+                </div>
+            </div>
+            
+            <table class="table data-table">
+                <thead>
+                    <tr>
+                        <th data-sort="codigo">Código</th>
+                        <th data-sort="nombre">Nombre</th>
+                        <th data-sort="semestre">Semestre</th>
+                        <th data-sort="creditos">Créditos</th>
+                        <th>Horas</th>
+                        <th data-sort="prerequisitos">Prerequisitos</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% materias.forEach(materia => { %>
+                        <tr data-codigo="<%= materia.codigo.toLowerCase() %>" 
+                            data-nombre="<%= materia.nombre.toLowerCase() %>"
+                            data-semestre="<%= materia.semestre %>">
+                            <td>
+                                <span class="materia-codigo"><%= materia.codigo %></span>
+                            </td>
+                            <td>
+                                <div class="materia-info">
+                                    <h4><%= materia.nombre %></h4>
+                                    <% if (materia.descripcion) { %>
+                                        <small><%= materia.descripcion %></small>
+                                    <% } %>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge badge-primary">Semestre <%= materia.semestre %></span>
+                            </td>
+                            <td>
+                                <span class="creditos-badge"><%= materia.creditos %> créditos</span>
+                            </td>
+                            <td>
+                                <div class="hours-breakdown">
+                                    <% if (materia.horasTeoria > 0) { %>
+                                        <span class="hour-type teoria"><%= materia.horasTeoria %>T</span>
+                                    <% } %>
+                                    <% if (materia.horasPractica > 0) { %>
+                                        <span class="hour-type practica"><%= materia.horasPractica %>P</span>
+                                    <% } %>
+                                    <% if (materia.horasLaboratorio > 0) { %>
+                                        <span class="hour-type laboratorio"><%= materia.horasLaboratorio %>L</span>
+                                    <% } %>
+                                    <div class="total-hours">
+                                        Total: <%= materia.horasTeoria + materia.horasPractica + materia.horasLaboratorio %>h
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <% if (materia.prerequisitos && materia.prerequisitos.length > 0) { %>
+                                    <div class="prerequisitos">
+                                        <% materia.prerequisitos.forEach(prereqId => { %>
+                                            <% const prereq = materias.find(m => m.id === prereqId); %>
+                                            <% if (prereq) { %>
+                                                <span class="prereq-badge" title="<%= prereq.nombre %>">
+                                                    <%= prereq.codigo %>
+                                                </span>
+                                            <% } %>
+                                        <% }); %>
+                                    </div>
+                                <% } else { %>
+                                    <span class="no-prereq">Sin prerequisitos</span>
+                                <% } %>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="/materias/<%= materia.id %>" class="btn btn-sm btn-secondary" title="Ver detalles">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="/materias/<%= materia.id %>/edit" class="btn btn-sm btn-primary" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button class="btn btn-sm btn-danger delete-btn" 
+                                            data-id="<%= materia.id %>" 
+                                            data-name="<%= materia.nombre %>"
+                                            title="Eliminar">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Estadísticas rápidas -->
+        <div class="stats-section">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3><%= materias.length %></h3>
+                        <p>Total Materias</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3><%= materias.reduce((total, m) => total + m.horasTeoria + m.horasPractica + m.horasLaboratorio, 0) %></h3>
+                        <p>Horas Totales</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3><%= materias.reduce((total, m) => total + m.creditos, 0) %></h3>
+                        <p>Créditos Totales</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3><%= new Set(materias.map(m => m.semestre)).size %></h3>
+                        <p>Semestres</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <% } %>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Search functionality
+    const searchInput = document.getElementById('searchInput');
+    const tableRows = document.querySelectorAll('tbody tr');
+    
+    searchInput.addEventListener('input', function() {
+        filterTable();
+    });
+    
+    // Semester filter
+    const semesterFilter = document.getElementById('semesterFilter');
+    semesterFilter.addEventListener('change', function() {
+        filterTable();
+    });
+    
+    function filterTable() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedSemester = semesterFilter.value;
+        
+        tableRows.forEach(row => {
+            const codigo = row.getAttribute('data-codigo');
+            const nombre = row.getAttribute('data-nombre');
+            const semestre = row.getAttribute('data-semestre');
+            
+            const matchesSearch = codigo.includes(searchTerm) || nombre.includes(searchTerm);
+            const matchesSemester = !selectedSemester || semestre === selectedSemester;
+            
+            row.style.display = (matchesSearch && matchesSemester) ? '' : 'none';
+        });
+    }
+    
+    // Delete functionality
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            const name = this.getAttribute('data-name');
+            
+            if (confirm(`¿Está seguro de que desea eliminar la materia "${name}"?`)) {
+                fetch(`/materias/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification('Materia eliminada exitosamente', 'success');
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    } else {
+                        showNotification('Error al eliminar materia: ' + data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    showNotification('Error al eliminar materia', 'error');
+                    console.error('Error:', error);
+                });
+            }
+        });
+    });
+});
+</script>
+
+<style>
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.page-title h2 {
+    margin: 0 0 5px 0;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.page-title p {
+    margin: 0;
+    color: #666;
+}
+
+.page-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.table-container {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    overflow: hidden;
+    margin-bottom: 30px;
+}
+
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #e9ecef;
+    background: #f8f9fa;
+}
+
+.table-search {
+    position: relative;
+    width: 300px;
+}
+
+.table-search input {
+    padding-left: 40px;
+    padding-right: 15px;
+}
+
+.table-search i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
+}
+
+.table-filters {
+    display: flex;
+    gap: 10px;
+}
+
+.table-count {
+    color: #666;
+    font-size: 14px;
+}
+
+.materia-codigo {
+    font-weight: bold;
+    color: #1976d2;
+    font-family: monospace;
+}
+
+.materia-info h4 {
+    margin: 0 0 5px 0;
+    font-size: 14px;
+    color: #333;
+}
+
+.materia-info small {
+    color: #666;
+    font-size: 12px;
+}
+
+.creditos-badge {
+    background: #e8f5e8;
+    color: #4CAF50;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.hours-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.hour-type {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 500;
+    margin-right: 5px;
+}
+
+.hour-type.teoria {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.hour-type.practica {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.hour-type.laboratorio {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.total-hours {
+    font-size: 11px;
+    color: #666;
+    font-weight: 500;
+}
+
+.prerequisitos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+}
+
+.prereq-badge {
+    background: #f0f0f0;
+    color: #333;
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 500;
+    cursor: help;
+}
+
+.no-prereq {
+    color: #666;
+    font-size: 12px;
+    font-style: italic;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.stats-section {
+    margin-top: 30px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: white;
+}
+
+.stat-card:nth-child(1) .stat-icon { background: #4CAF50; }
+.stat-card:nth-child(2) .stat-icon { background: #2196F3; }
+.stat-card:nth-child(3) .stat-icon { background: #FF9800; }
+.stat-card:nth-child(4) .stat-icon { background: #9C27B0; }
+
+.stat-content h3 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: bold;
+    color: #333;
+}
+
+.stat-content p {
+    margin: 5px 0 0 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
+}
+
+.empty-state i {
+    font-size: 64px;
+    color: #ddd;
+    margin-bottom: 20px;
+    display: block;
+}
+
+.empty-state h3 {
+    margin: 0 0 10px 0;
+    color: #333;
+}
+
+.empty-state p {
+    margin: 0 0 20px 0;
+}
+
+.empty-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+    .page-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .page-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .table-header {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .table-search {
+        width: 100%;
+    }
+    
+    .table-filters {
+        width: 100%;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .empty-actions {
+        flex-direction: column;
+    }
+}
+</style> 

@@ -1,0 +1,277 @@
+<div class="conflicts-main">
+  <div class="page-header">
+    <h2>Conflictos de Horarios</h2>
+    <div class="header-actions">
+      <a href="/horarios" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Volver
+      </a>
+      <button class="btn btn-warning" onclick="validateAll()">
+        <i class="fas fa-search"></i> Validar Todo
+      </button>
+    </div>
+  </div>
+
+  <div class="conflicts-content">
+    <!-- Resumen de Conflictos -->
+    <div class="conflicts-overview">
+      <div class="overview-grid">
+        <div class="overview-card total">
+          <div class="overview-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
+          <div class="overview-content">
+            <h3><%= conflictos.length %></h3>
+            <p>Total de Conflictos</p>
+          </div>
+        </div>
+
+        <div class="overview-card critical">
+          <div class="overview-icon">
+            <i class="fas fa-times-circle"></i>
+          </div>
+          <div class="overview-content">
+            <h3><%= conflictos.filter(c => c.tipo === 'conflicto_horario').length %></h3>
+            <p>Conflictos de Horario</p>
+          </div>
+        </div>
+
+        <div class="overview-card warning">
+          <div class="overview-icon">
+            <i class="fas fa-exclamation-circle"></i>
+          </div>
+          <div class="overview-content">
+            <h3><%= conflictos.filter(c => c.tipo === 'limite_excedido').length %></h3>
+            <p>Límites Excedidos</p>
+          </div>
+        </div>
+
+        <div class="overview-card info">
+          <div class="overview-icon">
+            <i class="fas fa-info-circle"></i>
+          </div>
+          <div class="overview-content">
+            <h3><%= conflictos.filter(c => c.tipo === 'disponibilidad').length %></h3>
+            <p>Problemas de Disponibilidad</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="conflicts-filters">
+      <h3>Filtros</h3>
+      <div class="filters-grid">
+        <div class="filter-item">
+          <label for="tipoFilter">Tipo de Conflicto:</label>
+          <select id="tipoFilter" onchange="filterConflicts()">
+            <option value="">Todos</option>
+            <option value="conflicto_horario">Conflicto de Horario</option>
+            <option value="limite_excedido">Límite Excedido</option>
+            <option value="disponibilidad">Disponibilidad</option>
+          </select>
+        </div>
+
+        <div class="filter-item">
+          <label for="profesorFilter">Profesor:</label>
+          <select id="profesorFilter" onchange="filterConflicts()">
+            <option value="">Todos</option>
+            <% profesores.forEach(profesor => { %>
+              <option value="<%= profesor.id %>"><%= profesor.nombre %> <%= profesor.apellido %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="filter-item">
+          <label for="severityFilter">Severidad:</label>
+          <select id="severityFilter" onchange="filterConflicts()">
+            <option value="">Todas</option>
+            <option value="critical">Crítica</option>
+            <option value="warning">Advertencia</option>
+            <option value="info">Información</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lista de Conflictos -->
+    <div class="conflicts-list">
+      <h3>Detalle de Conflictos</h3>
+      
+      <% if (conflictos && conflictos.length > 0) { %>
+        <div class="conflicts-container">
+          <% conflictos.forEach((conflicto, index) => { %>
+            <div class="conflict-card <%= conflicto.tipo %>" data-tipo="<%= conflicto.tipo %>" data-profesor="<%= conflicto.profesor?.id %>">
+              <div class="conflict-header">
+                <div class="conflict-type">
+                  <i class="fas fa-<%= conflicto.tipo === 'conflicto_horario' ? 'times-circle' : conflicto.tipo === 'limite_excedido' ? 'exclamation-circle' : 'info-circle' %>"></i>
+                  <span class="type-label">
+                    <%= conflicto.tipo === 'conflicto_horario' ? 'Conflicto de Horario' : 
+                        conflicto.tipo === 'limite_excedido' ? 'Límite Excedido' : 'Disponibilidad' %>
+                  </span>
+                </div>
+                <div class="conflict-actions">
+                  <button class="btn btn-sm btn-primary" onclick="resolveConflict(<%= index %>)">
+                    <i class="fas fa-wrench"></i> Resolver
+                  </button>
+                  <button class="btn btn-sm btn-secondary" onclick="ignoreConflict(<%= index %>)">
+                    <i class="fas fa-eye-slash"></i> Ignorar
+                  </button>
+                </div>
+              </div>
+
+              <div class="conflict-body">
+                <div class="conflict-message">
+                  <p><%= conflicto.mensaje %></p>
+                </div>
+
+                <% if (conflicto.profesor) { %>
+                <div class="conflict-professor">
+                  <strong>Profesor:</strong> <%= conflicto.profesor.nombre %> <%= conflicto.profesor.apellido %>
+                  <span class="professor-specialty">(<%= conflicto.profesor.especialidad %>)</span>
+                </div>
+                <% } %>
+
+                <% if (conflicto.horario1 && conflicto.horario2) { %>
+                <div class="conflict-details">
+                  <div class="conflict-horarios">
+                    <div class="horario-item">
+                      <strong>Horario 1:</strong> <%= conflicto.horario1.dia %> <%= conflicto.horario1.horaInicio %>:00 - <%= conflicto.horario1.horaFin %>:00
+                    </div>
+                    <div class="horario-item">
+                      <strong>Horario 2:</strong> <%= conflicto.horario2.dia %> <%= conflicto.horario2.horaInicio %>:00 - <%= conflicto.horario2.horaFin %>:00
+                    </div>
+                  </div>
+                </div>
+                <% } %>
+
+                <% if (conflicto.tipo === 'limite_excedido') { %>
+                <div class="conflict-limits">
+                  <div class="limit-info">
+                    <span class="current-hours"><%= conflicto.horasActuales %> horas actuales</span>
+                    <span class="max-hours">Límite: <%= conflicto.limite %> horas</span>
+                  </div>
+                  <div class="limit-bar">
+                    <div class="limit-fill" style="width: <%= Math.min((conflicto.horasActuales / conflicto.limite) * 100, 100) %>%"></div>
+                  </div>
+                </div>
+                <% } %>
+              </div>
+
+              <div class="conflict-suggestions">
+                <h5>Sugerencias de Resolución:</h5>
+                <ul>
+                  <% if (conflicto.tipo === 'conflicto_horario') { %>
+                    <li>Cambiar uno de los horarios conflictivos</li>
+                    <li>Asignar a un profesor diferente</li>
+                    <li>Mover la clase a otro día</li>
+                  <% } else if (conflicto.tipo === 'limite_excedido') { %>
+                    <li>Reducir la carga horaria del profesor</li>
+                    <li>Asignar la materia a otro profesor</li>
+                    <li>Aumentar el límite de horas si es necesario</li>
+                  <% } else { %>
+                    <li>Verificar la disponibilidad del profesor</li>
+                    <li>Actualizar el calendario de disponibilidad</li>
+                    <li>Contactar al profesor para confirmar horarios</li>
+                  <% } %>
+                </ul>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <div class="no-conflicts">
+          <div class="no-conflicts-icon">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <h4>¡Excelente! No hay conflictos detectados</h4>
+          <p>El sistema de horarios está funcionando correctamente sin conflictos.</p>
+          <button class="btn btn-primary" onclick="validateAll()">
+            <i class="fas fa-search"></i> Validar Nuevamente
+          </button>
+        </div>
+      <% } %>
+    </div>
+
+    <!-- Acciones Masivas -->
+    <% if (conflictos && conflictos.length > 0) { %>
+    <div class="bulk-actions">
+      <h3>Acciones Masivas</h3>
+      <div class="bulk-buttons">
+        <button class="btn btn-warning" onclick="resolveAllConflicts()">
+          <i class="fas fa-magic"></i> Resolver Todos Automáticamente
+        </button>
+        <button class="btn btn-secondary" onclick="ignoreAllConflicts()">
+          <i class="fas fa-eye-slash"></i> Ignorar Todos
+        </button>
+        <button class="btn btn-info" onclick="exportConflicts()">
+          <i class="fas fa-download"></i> Exportar Reporte
+        </button>
+      </div>
+    </div>
+    <% } %>
+  </div>
+</div>
+
+<script>
+function filterConflicts() {
+  const tipoFilter = document.getElementById('tipoFilter').value;
+  const profesorFilter = document.getElementById('profesorFilter').value;
+  const severityFilter = document.getElementById('severityFilter').value;
+
+  document.querySelectorAll('.conflict-card').forEach(card => {
+    let show = true;
+
+    if (tipoFilter && card.dataset.tipo !== tipoFilter) {
+      show = false;
+    }
+
+    if (profesorFilter && card.dataset.profesor !== profesorFilter) {
+      show = false;
+    }
+
+    // Implementar filtro de severidad según el tipo
+    if (severityFilter) {
+      const tipo = card.dataset.tipo;
+      const isCritical = tipo === 'conflicto_horario';
+      const isWarning = tipo === 'limite_excedido';
+      const isInfo = tipo === 'disponibilidad';
+
+      if (severityFilter === 'critical' && !isCritical) show = false;
+      if (severityFilter === 'warning' && !isWarning) show = false;
+      if (severityFilter === 'info' && !isInfo) show = false;
+    }
+
+    card.style.display = show ? 'block' : 'none';
+  });
+}
+
+function resolveConflict(index) {
+  // Implementar resolución de conflicto
+  alert(`Resolviendo conflicto ${index + 1}...`);
+}
+
+function ignoreConflict(index) {
+  // Implementar ignorar conflicto
+  alert(`Ignorando conflicto ${index + 1}...`);
+}
+
+function validateAll() {
+  // Implementar validación completa
+  alert('Validando todos los horarios...');
+}
+
+function resolveAllConflicts() {
+  // Implementar resolución automática
+  alert('Resolviendo todos los conflictos automáticamente...');
+}
+
+function ignoreAllConflicts() {
+  // Implementar ignorar todos
+  alert('Ignorando todos los conflictos...');
+}
+
+function exportConflicts() {
+  // Implementar exportación
+  alert('Exportando reporte de conflictos...');
+}
+</script> 

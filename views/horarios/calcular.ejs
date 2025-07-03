@@ -1,0 +1,204 @@
+<div class="calculate-schedules">
+  <div class="page-header">
+    <h2>Calcular Horarios Automáticamente</h2>
+    <div class="header-actions">
+      <a href="/horarios" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Volver
+      </a>
+    </div>
+  </div>
+
+  <div class="calculate-content">
+    <div class="calculation-form">
+      <h3>Seleccionar Elementos para el Cálculo</h3>
+      
+      <form action="/horarios/calcular" method="POST" id="calculateForm">
+        <div class="form-section">
+          <h4>Materias a Incluir</h4>
+          <div class="subjects-grid">
+            <% materias.forEach(materia => { %>
+              <div class="subject-checkbox">
+                <input type="checkbox" id="materia_<%= materia.id %>" name="materias[]" value="<%= materia.id %>">
+                <label for="materia_<%= materia.id %>">
+                  <div class="subject-info">
+                    <strong><%= materia.nombre %></strong>
+                    <span class="subject-code"><%= materia.codigo %></span>
+                    <span class="subject-semester">Semestre <%= materia.semestre %></span>
+                  </div>
+                  <div class="subject-hours">
+                    <span class="hours-item">Teoría: <%= materia.horasTeoria %>h</span>
+                    <span class="hours-item">Práctica: <%= materia.horasPractica %>h</span>
+                    <span class="hours-item">Lab: <%= materia.horasLaboratorio %>h</span>
+                  </div>
+                </label>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h4>Profesores Disponibles</h4>
+          <div class="professors-grid">
+            <% profesores.forEach(profesor => { %>
+              <div class="professor-checkbox">
+                <input type="checkbox" id="profesor_<%= profesor.id %>" name="profesores[]" value="<%= profesor.id %>">
+                <label for="profesor_<%= profesor.id %>">
+                  <div class="professor-info">
+                    <strong><%= profesor.nombre %> <%= profesor.apellido %></strong>
+                    <span class="professor-specialty"><%= profesor.especialidad %></span>
+                  </div>
+                  <div class="professor-availability">
+                    <span class="current-hours"><%= profesor.horasAsignadas || 0 %>h asignadas</span>
+                    <span class="max-hours">Máx: <%= profesor.maxHorasSemana %>h</span>
+                  </div>
+                </label>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h4>Restricciones y Configuración</h4>
+          <div class="restrictions-grid">
+            <div class="restriction-item">
+              <label for="maxHoursPerDay">Máximo de horas por día:</label>
+              <input type="number" id="maxHoursPerDay" name="maxHoursPerDay" value="8" min="1" max="12">
+            </div>
+            
+            <div class="restriction-item">
+              <label for="preferredStartTime">Hora de inicio preferida:</label>
+              <select id="preferredStartTime" name="preferredStartTime">
+                <option value="7">07:00</option>
+                <option value="8" selected>08:00</option>
+                <option value="9">09:00</option>
+                <option value="10">10:00</option>
+              </select>
+            </div>
+            
+            <div class="restriction-item">
+              <label for="preferredEndTime">Hora de fin preferida:</label>
+              <select id="preferredEndTime" name="preferredEndTime">
+                <option value="16">16:00</option>
+                <option value="17">17:00</option>
+                <option value="18" selected>18:00</option>
+                <option value="19">19:00</option>
+                <option value="20">20:00</option>
+              </select>
+            </div>
+            
+            <div class="restriction-item">
+              <label for="avoidWeekends">Evitar fines de semana:</label>
+              <input type="checkbox" id="avoidWeekends" name="avoidWeekends" checked>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary btn-lg">
+            <i class="fas fa-calculator"></i> Calcular Horarios
+          </button>
+          <button type="button" class="btn btn-secondary" onclick="resetForm()">
+            <i class="fas fa-undo"></i> Reiniciar
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <% if (typeof resultado !== 'undefined' && resultado) { %>
+    <div class="calculation-results">
+      <h3>Resultados del Cálculo</h3>
+      
+      <div class="results-summary">
+        <div class="summary-card success">
+          <div class="summary-icon">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <div class="summary-content">
+            <h4><%= resultado.resumen.materiasAsignadas %></h4>
+            <p>Materias Asignadas</p>
+          </div>
+        </div>
+        
+        <div class="summary-card warning">
+          <div class="summary-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
+          <div class="summary-content">
+            <h4><%= resultado.resumen.materiasSinAsignar %></h4>
+            <p>Materias Sin Asignar</p>
+          </div>
+        </div>
+        
+        <div class="summary-card info">
+          <div class="summary-icon">
+            <i class="fas fa-clock"></i>
+          </div>
+          <div class="summary-content">
+            <h4><%= resultado.resumen.totalHoras %></h4>
+            <p>Total de Horas</p>
+          </div>
+        </div>
+      </div>
+
+      <% if (resultado.materias && resultado.materias.length > 0) { %>
+      <div class="assigned-subjects">
+        <h4>Materias Asignadas Exitosamente</h4>
+        <div class="subjects-list">
+          <% resultado.materias.forEach(materia => { %>
+            <div class="subject-result success">
+              <div class="subject-header">
+                <h5><%= materia.materia.nombre %></h5>
+                <span class="completion-badge">Completado</span>
+              </div>
+              <div class="subject-details">
+                <p><strong>Profesor:</strong> <%= materia.asignaciones[0]?.profesorNombre || 'No asignado' %></p>
+                <p><strong>Horas Asignadas:</strong> <%= materia.horasAsignadas %> de <%= materia.horasNecesarias %></p>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+      <% } %>
+
+      <% if (resultado.conflictos && resultado.conflictos.length > 0) { %>
+      <div class="conflicts-found">
+        <h4>Conflictos Detectados</h4>
+        <div class="conflicts-list">
+          <% resultado.conflictos.forEach(conflicto => { %>
+            <div class="conflict-result">
+              <div class="conflict-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+              </div>
+              <div class="conflict-content">
+                <p><strong><%= conflicto.materia.nombre %></strong></p>
+                <p><%= conflicto.razon %></p>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+      <% } %>
+
+      <div class="results-actions">
+        <button class="btn btn-success" onclick="saveResults()">
+          <i class="fas fa-save"></i> Guardar Horarios
+        </button>
+        <a href="/horarios" class="btn btn-secondary">
+          <i class="fas fa-eye"></i> Ver Todos los Horarios
+        </a>
+      </div>
+    </div>
+    <% } %>
+  </div>
+</div>
+
+<script>
+function resetForm() {
+  document.getElementById('calculateForm').reset();
+}
+
+function saveResults() {
+  // Implementar guardado de resultados
+  alert('Funcionalidad de guardado en desarrollo');
+}
+</script> 

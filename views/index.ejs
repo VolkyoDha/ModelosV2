@@ -1,0 +1,105 @@
+<div class="dashboard">
+  <div class="dashboard-header">
+    <h1>Sistema de Gestión de Horarios Universitarios</h1>
+    <p>Bienvenido al panel de control</p>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">👨‍🏫</div>
+      <div class="stat-content">
+        <h3><%= estadisticas.totalProfesores %></h3>
+        <p>Profesores Registrados</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">📚</div>
+      <div class="stat-content">
+        <h3><%= estadisticas.totalMaterias %></h3>
+        <p>Materias Disponibles</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">⏰</div>
+      <div class="stat-content">
+        <h3><%= estadisticas.totalHoras %></h3>
+        <p>Horas Asignadas</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">⚠️</div>
+      <div class="stat-content">
+        <h3><%= estadisticas.conflictos %></h3>
+        <p>Conflictos Detectados</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="quick-actions">
+    <h2>Acciones Rápidas</h2>
+    <div class="actions-grid">
+      <a href="/profesores" class="action-card">
+        <div class="action-icon">👨‍🏫</div>
+        <h3>Gestionar Profesores</h3>
+        <p>Agregar, editar o eliminar profesores</p>
+      </a>
+
+      <a href="/materias" class="action-card">
+        <div class="action-icon">📚</div>
+        <h3>Gestionar Materias</h3>
+        <p>Administrar materias y malla curricular</p>
+      </a>
+
+      <a href="/horarios" class="action-card">
+        <div class="action-icon">⏰</div>
+        <h3>Gestionar Horarios</h3>
+        <p>Asignar y validar horarios</p>
+      </a>
+
+      <a href="/horarios/calcular" class="action-card">
+        <div class="action-icon">🧮</div>
+        <h3>Calcular Horarios</h3>
+        <p>Generar horarios automáticamente</p>
+      </a>
+    </div>
+  </div>
+
+  <% if (profesoresConCarga && profesoresConCarga.length > 0) { %>
+  <div class="professors-load">
+    <h2>Profesores con Mayor Carga Horaria</h2>
+    <div class="professors-grid">
+      <% profesoresConCarga.forEach(profesor => { %>
+        <div class="professor-card">
+          <div class="professor-info">
+            <h4><%= profesor.nombre %></h4>
+            <p><%= profesor.especialidad %></p>
+            <div class="hours-info">
+              <span class="hours-badge"><%= profesor.horasAsignadas %> horas</span>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+  <% } %>
+
+  <% if (conflictos && conflictos.length > 0) { %>
+  <div class="conflicts-section">
+    <h2>Conflictos de Horario Detectados</h2>
+    <div class="conflicts-list">
+      <% conflictos.slice(0, 3).forEach(conflicto => { %>
+        <div class="conflict-item">
+          <div class="conflict-icon">⚠️</div>
+          <div class="conflict-content">
+            <p><%= conflicto.descripcion %></p>
+            <small>Profesor: <%= conflicto.profesor %></small>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+  <% } %>
+</div> 

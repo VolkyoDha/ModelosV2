@@ -1,0 +1,344 @@
+<div class="page-header">
+    <div class="page-title">
+        <h2><i class="fas fa-chalkboard-teacher"></i> Gestión de Profesores</h2>
+        <p>Administra los profesores y sus horarios asignados</p>
+    </div>
+    <div class="page-actions">
+        <a href="/profesores/create" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Agregar Profesor
+        </a>
+    </div>
+</div>
+
+<div class="content-section">
+    <% if (profesores.length === 0) { %>
+        <div class="empty-state">
+            <i class="fas fa-users"></i>
+            <h3>No hay profesores registrados</h3>
+            <p>Comienza agregando el primer profesor al sistema</p>
+            <a href="/profesores/create" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Agregar Profesor
+            </a>
+        </div>
+    <% } else { %>
+        <div class="table-container">
+            <div class="table-header">
+                <div class="table-search">
+                    <input type="text" class="form-control" placeholder="Buscar profesores..." id="searchInput">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="table-actions">
+                    <span class="table-count"><%= profesores.length %> profesores</span>
+                </div>
+            </div>
+            
+            <table class="table data-table">
+                <thead>
+                    <tr>
+                        <th data-sort="nombre">Nombre</th>
+                        <th data-sort="especialidad">Especialidad</th>
+                        <th data-sort="email">Email</th>
+                        <th data-sort="horas">Horas Asignadas</th>
+                        <th data-sort="estado">Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% profesores.forEach(profesor => { %>
+                        <tr data-nombre="<%= profesor.nombre.toLowerCase() %> <%= profesor.apellido.toLowerCase() %>" 
+                            data-especialidad="<%= profesor.especialidad.toLowerCase() %>"
+                            data-email="<%= profesor.email.toLowerCase() %>">
+                            <td>
+                                <div class="professor-info">
+                                    <div class="professor-avatar">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <div class="professor-details">
+                                        <h4><%= profesor.nombre %> <%= profesor.apellido %></h4>
+                                        <small>ID: <%= profesor.id %></small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge badge-primary"><%= profesor.especialidad %></span>
+                            </td>
+                            <td>
+                                <a href="mailto:<%= profesor.email %>" class="email-link">
+                                    <%= profesor.email %>
+                                </a>
+                            </td>
+                            <td>
+                                <% const horasAsignadas = profesor.horarios.reduce((total, h) => total + (parseInt(h.horaFin) - parseInt(h.horaInicio)), 0); %>
+                                <div class="hours-info">
+                                    <span class="hours-text"><%= horasAsignadas %>h / <%= profesor.maxHorasSemana %>h</span>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: <%= Math.min(100, (horasAsignadas / profesor.maxHorasSemana) * 100) %>%"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <% if (horasAsignadas === 0) { %>
+                                    <span class="badge badge-secondary">Sin horarios</span>
+                                <% } else if (horasAsignadas >= profesor.maxHorasSemana) { %>
+                                    <span class="badge badge-danger">Completo</span>
+                                <% } else if (horasAsignadas >= profesor.maxHorasSemana * 0.8) { %>
+                                    <span class="badge badge-warning">Casi completo</span>
+                                <% } else { %>
+                                    <span class="badge badge-success">Disponible</span>
+                                <% } %>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="/profesores/<%= profesor.id %>" class="btn btn-sm btn-secondary" title="Ver detalles">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="/profesores/<%= profesor.id %>/edit" class="btn btn-sm btn-primary" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button class="btn btn-sm btn-danger delete-btn" 
+                                            data-id="<%= profesor.id %>" 
+                                            data-name="<%= profesor.nombre %> <%= profesor.apellido %>"
+                                            title="Eliminar">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    <% } %>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Search functionality
+    const searchInput = document.getElementById('searchInput');
+    const tableRows = document.querySelectorAll('tbody tr');
+    
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        
+        tableRows.forEach(row => {
+            const nombre = row.getAttribute('data-nombre');
+            const especialidad = row.getAttribute('data-especialidad');
+            const email = row.getAttribute('data-email');
+            
+            const matches = nombre.includes(searchTerm) || 
+                           especialidad.includes(searchTerm) || 
+                           email.includes(searchTerm);
+            
+            row.style.display = matches ? '' : 'none';
+        });
+    });
+    
+    // Delete functionality
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            const name = this.getAttribute('data-name');
+            
+            if (confirm(`¿Está seguro de que desea eliminar al profesor "${name}"?`)) {
+                fetch(`/profesores/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification('Profesor eliminado exitosamente', 'success');
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    } else {
+                        showNotification('Error al eliminar profesor: ' + data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    showNotification('Error al eliminar profesor', 'error');
+                    console.error('Error:', error);
+                });
+            }
+        });
+    });
+});
+</script>
+
+<style>
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.page-title h2 {
+    margin: 0 0 5px 0;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.page-title p {
+    margin: 0;
+    color: #666;
+}
+
+.table-container {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #e9ecef;
+    background: #f8f9fa;
+}
+
+.table-search {
+    position: relative;
+    width: 300px;
+}
+
+.table-search input {
+    padding-left: 40px;
+    padding-right: 15px;
+}
+
+.table-search i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
+}
+
+.table-count {
+    color: #666;
+    font-size: 14px;
+}
+
+.professor-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.professor-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #e3f2fd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1976d2;
+}
+
+.professor-details h4 {
+    margin: 0 0 2px 0;
+    font-size: 14px;
+    color: #333;
+}
+
+.professor-details small {
+    color: #666;
+    font-size: 11px;
+}
+
+.email-link {
+    color: #1976d2;
+    text-decoration: none;
+}
+
+.email-link:hover {
+    text-decoration: underline;
+}
+
+.hours-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.hours-text {
+    font-size: 12px;
+    font-weight: 500;
+    color: #333;
+}
+
+.progress-bar {
+    width: 100px;
+    height: 6px;
+    background: #e9ecef;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #4CAF50;
+    transition: width 0.3s ease;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
+}
+
+.empty-state i {
+    font-size: 64px;
+    color: #ddd;
+    margin-bottom: 20px;
+    display: block;
+}
+
+.empty-state h3 {
+    margin: 0 0 10px 0;
+    color: #333;
+}
+
+.empty-state p {
+    margin: 0 0 20px 0;
+}
+
+@media (max-width: 768px) {
+    .page-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .table-header {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .table-search {
+        width: 100%;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+}
+</style> 

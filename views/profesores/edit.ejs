@@ -1,0 +1,72 @@
+<div class="professor-edit">
+  <div class="edit-header">
+    <h2>Editar Profesor</h2>
+    <div class="header-actions">
+      <a href="/profesores/<%= profesor.id %>" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Volver
+      </a>
+    </div>
+  </div>
+
+  <div class="edit-content">
+    <form action="/profesores/<%= profesor.id %>" method="POST" class="edit-form">
+      <input type="hidden" name="_method" value="PUT">
+      
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="nombre" class="form-label">Nombre *</label>
+          <input type="text" id="nombre" name="nombre" class="form-control" 
+                 value="<%= profesor.nombre %>" required>
+        </div>
+
+        <div class="form-group">
+          <label for="apellido" class="form-label">Apellido *</label>
+          <input type="text" id="apellido" name="apellido" class="form-control" 
+                 value="<%= profesor.apellido %>" required>
+        </div>
+
+        <div class="form-group">
+          <label for="email" class="form-label">Email *</label>
+          <input type="email" id="email" name="email" class="form-control" 
+                 value="<%= profesor.email %>" required>
+        </div>
+
+        <div class="form-group">
+          <label for="especialidad" class="form-label">Especialidad *</label>
+          <input type="text" id="especialidad" name="especialidad" class="form-control" 
+                 value="<%= profesor.especialidad %>" required>
+        </div>
+
+        <div class="form-group">
+          <label for="maxHorasSemana" class="form-label">Máximo de Horas por Semana *</label>
+          <input type="number" id="maxHorasSemana" name="maxHorasSemana" class="form-control" 
+                 value="<%= profesor.maxHorasSemana %>" min="1" max="40" required>
+          <div class="form-help">Máximo 40 horas por semana</div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-save"></i> Guardar Cambios
+        </button>
+        <a href="/profesores/<%= profesor.id %>" class="btn btn-secondary">
+          <i class="fas fa-times"></i> Cancelar
+        </a>
+      </div>
+    </form>
+
+    <div class="danger-zone">
+      <h3>Zona de Peligro</h3>
+      <div class="danger-content">
+        <p>Esta acción no se puede deshacer. Se eliminará permanentemente al profesor y todos sus horarios asignados.</p>
+        <form action="/profesores/<%= profesor.id %>" method="POST" class="delete-form" 
+              onsubmit="return confirm('¿Estás seguro de que quieres eliminar este profesor? Esta acción no se puede deshacer.')">
+          <input type="hidden" name="_method" value="DELETE">
+          <button type="submit" class="btn btn-danger">
+            <i class="fas fa-trash"></i> Eliminar Profesor
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div> 

@@ -1,0 +1,55 @@
+<div class="professor-create">
+  <div class="edit-header">
+    <h2>Agregar Profesor</h2>
+    <div class="header-actions">
+      <a href="/profesores" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Volver
+      </a>
+    </div>
+  </div>
+
+  <div class="edit-content">
+    <form action="/profesores" method="POST" class="edit-form">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="nombre" class="form-label">Nombre *</label>
+          <input type="text" id="nombre" name="nombre" class="form-control" value="<%= data ? data.nombre : '' %>" required>
+        </div>
+
+        <div class="form-group">
+          <label for="apellido" class="form-label">Apellido *</label>
+          <input type="text" id="apellido" name="apellido" class="form-control" value="<%= data ? data.apellido : '' %>" required>
+        </div>
+
+        <div class="form-group">
+          <label for="email" class="form-label">Email *</label>
+          <input type="email" id="email" name="email" class="form-control" value="<%= data ? data.email : '' %>" required>
+        </div>
+
+        <div class="form-group">
+          <label for="especialidad" class="form-label">Especialidad *</label>
+          <input type="text" id="especialidad" name="especialidad" class="form-control" value="<%= data ? data.especialidad : '' %>" required>
+        </div>
+
+        <div class="form-group">
+          <label for="maxHorasSemana" class="form-label">Máximo de Horas por Semana *</label>
+          <input type="number" id="maxHorasSemana" name="maxHorasSemana" class="form-control" value="<%= data ? data.maxHorasSemana : '' %>" min="1" max="40" required>
+          <div class="form-help">Máximo 40 horas por semana</div>
+        </div>
+      </div>
+
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div class="alert alert-danger"><%= error %></div>
+      <% } %>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-save"></i> Guardar
+        </button>
+        <a href="/profesores" class="btn btn-secondary">
+          <i class="fas fa-times"></i> Cancelar
+        </a>
+      </div>
+    </form>
+  </div>
+</div> 
