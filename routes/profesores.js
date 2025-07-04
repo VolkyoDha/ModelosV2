@@ -9,7 +9,6 @@ router.post('/', profesoresController.store);
 router.get('/:id/edit', profesoresController.edit);
 router.put('/:id', profesoresController.update);
 router.delete('/:id', profesoresController.destroy);
-router.get('/:id', profesoresController.show);
 
 // Rutas para horarios de profesores
 router.post('/:id/horarios', profesoresController.addHorario);
@@ -19,5 +18,8 @@ router.post('/:id/check-conflictos', profesoresController.checkConflictos);
 
 // API
 router.get('/api/all', profesoresController.getAll);
+
+// Ruta para mostrar un profesor específico (debe ir después de las rutas más específicas)
+router.get('/:id', profesoresController.show);
 
 module.exports = router; 
