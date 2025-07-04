@@ -6,10 +6,10 @@ const profesoresController = require('../controllers/profesoresController');
 router.get('/', profesoresController.index);
 router.get('/create', profesoresController.create);
 router.post('/', profesoresController.store);
-router.get('/:id', profesoresController.show);
 router.get('/:id/edit', profesoresController.edit);
 router.put('/:id', profesoresController.update);
 router.delete('/:id', profesoresController.destroy);
+router.get('/:id', profesoresController.show);
 
 // Rutas para horarios de profesores
 router.post('/:id/horarios', profesoresController.addHorario);
