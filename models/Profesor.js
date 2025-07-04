@@ -48,37 +48,51 @@ class Profesor {
   }
 
   async update(id, profesorData) {
-    console.log('Modelo: Actualizando profesor ID:', id);
-    const profesores = await this.getAll();
-    console.log('Modelo: Profesores encontrados:', profesores.length);
-    console.log('Modelo: Buscando ID:', id.toString());
+    console.log('=== MODELO: INICIO ACTUALIZACIÓN ===');
+    console.log('Modelo: ID recibido:', id);
+    console.log('Modelo: Tipo de ID:', typeof id);
+    console.log('Modelo: Datos a actualizar:', profesorData);
     
-    const index = profesores.findIndex(p => p.id === id.toString());
+    const profesores = await this.getAll();
+    console.log('Modelo: Total de profesores:', profesores.length);
+    console.log('Modelo: IDs disponibles:', profesores.map(p => ({ id: p.id, tipo: typeof p.id })));
+    
+    // Convertir ID a string para comparación consistente
+    const idString = id.toString();
+    console.log('Modelo: ID convertido a string:', idString);
+    
+    const index = profesores.findIndex(p => p.id === idString);
     console.log('Modelo: Índice encontrado:', index);
     
     if (index === -1) {
       console.log('Modelo: Profesor no encontrado');
-      throw new Error('Profesor no encontrado');
+      throw new Error(`Profesor con ID ${idString} no encontrado`);
     }
 
     console.log('Modelo: Profesor encontrado:', profesores[index]);
     console.log('Modelo: Datos a actualizar:', profesorData);
 
-    profesores[index] = {
+    // Preservar el ID original y otros campos importantes
+    const profesorActualizado = {
       ...profesores[index],
-      id: profesores[index].id,
+      id: profesores[index].id, // Mantener el ID original
       nombre: profesorData.nombre,
       apellido: profesorData.apellido,
       email: profesorData.email,
       especialidad: profesorData.especialidad,
       maxHorasSemana: parseInt(profesorData.maxHorasSemana) || 20,
+      horarios: profesores[index].horarios || [], // Preservar horarios existentes
+      createdAt: profesores[index].createdAt, // Preservar fecha de creación
       updatedAt: new Date().toISOString()
     };
 
-    console.log('Modelo: Profesor actualizado:', profesores[index]);
+    console.log('Modelo: Profesor actualizado:', profesorActualizado);
+    
+    profesores[index] = profesorActualizado;
     await this.saveAll(profesores);
     console.log('Modelo: Datos guardados exitosamente');
-    return profesores[index];
+    console.log('=== MODELO: FIN ACTUALIZACIÓN ===');
+    return profesorActualizado;
   }
 
   async delete(id) {

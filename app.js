@@ -15,13 +15,17 @@ const indexRoutes = require('./routes/index');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Middleware de logging para depuración
+app.use((req, res, next) => {
+  console.log('Método:', req.method, 'URL:', req.url, 'Body:', req.body);
+  next();
+});
+
 // Configuración de middleware
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(methodOverride('_method'));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
-
-// Configurar method-override para PUT/DELETE
-app.use(methodOverride('_method'));
 
 // Configurar sesiones
 app.use(session({

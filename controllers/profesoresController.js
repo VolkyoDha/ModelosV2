@@ -108,8 +108,20 @@ class ProfesoresController {
   // Actualizar profesor
   async update(req, res) {
     try {
-      console.log('Actualizando profesor ID:', req.params.id);
+      console.log('=== INICIO ACTUALIZACIÓN PROFESOR ===');
+      console.log('ID del profesor:', req.params.id);
+      console.log('Tipo de ID:', typeof req.params.id);
       console.log('Datos recibidos:', req.body);
+      
+      // Validar que el profesor existe antes de actualizar
+      const profesorExistente = await Profesor.getById(req.params.id);
+      if (!profesorExistente) {
+        console.log('Profesor no encontrado en la base de datos');
+        req.flash('error', 'Profesor no encontrado');
+        return res.redirect('/profesores');
+      }
+      
+      console.log('Profesor encontrado:', profesorExistente);
       
       const profesorData = {
         nombre: req.body.nombre,
@@ -121,19 +133,30 @@ class ProfesoresController {
 
       console.log('Datos a actualizar:', profesorData);
       
-      await Profesor.update(req.params.id, profesorData);
-      console.log('Profesor actualizado exitosamente');
+      const profesorActualizado = await Profesor.update(req.params.id, profesorData);
+      console.log('Profesor actualizado exitosamente:', profesorActualizado);
       
       req.flash('success', 'Profesor actualizado exitosamente');
+      console.log('=== FIN ACTUALIZACIÓN PROFESOR ===');
       res.redirect(`/profesores/${req.params.id}`);
     } catch (error) {
-      console.error('Error al actualizar profesor:', error);
-      const profesor = await Profesor.getById(req.params.id);
-      res.render('profesores/edit', {
-        title: 'Editar Profesor',
-        profesor: profesor,
-        error: error.message
-      });
+      console.error('=== ERROR EN ACTUALIZACIÓN ===');
+      console.error('Error completo:', error);
+      console.error('Stack trace:', error.stack);
+      
+      // Intentar obtener el profesor para mostrar el formulario con error
+      try {
+        const profesor = await Profesor.getById(req.params.id);
+        res.render('profesores/edit', {
+          title: 'Editar Profesor',
+          profesor: profesor,
+          error: error.message
+        });
+      } catch (getError) {
+        console.error('Error al obtener profesor para mostrar formulario:', getError);
+        req.flash('error', 'Error al cargar profesor: ' + error.message);
+        res.redirect('/profesores');
+      }
     }
   }
 

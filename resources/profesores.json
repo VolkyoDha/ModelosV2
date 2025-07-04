@@ -1,13 +1,14 @@
 [
   {
     "id": "2",
-    "nombre": "Dra. María",
-    "apellido": "González",
-    "email": "maria.gonzalez@universidad.edu",
-    "especialidad": "Física",
-    "maxHorasSemana": 18,
+    "nombre": "Dr. Juan",
+    "apellido": "Pérez",
+    "email": "juan.perez@universidad.edu",
+    "especialidad": "Matemáticas",
+    "maxHorasSemana": 25,
     "horarios": [],
-    "createdAt": "2024-01-01T00:00:00.000Z"
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2025-07-04T00:03:53.570Z"
   },
   {
     "id": "3",
