@@ -4,6 +4,34 @@ const path = require('path');
 class Profesor {
   constructor() {
     this.filePath = path.join(__dirname, '../resources/profesores.json');
+    // Definir los tipos de profesor y sus horas correspondientes
+    this.tiposProfesor = {
+      'tiempo_parcial': {
+        nombre: 'Tiempo Parcial',
+        horasTotales: 10,
+        horasClase: 8
+      },
+      'medio_tiempo': {
+        nombre: 'Medio Tiempo',
+        horasTotales: 20,
+        horasClase: 16
+      },
+      'tiempo_completo': {
+        nombre: 'Tiempo Completo',
+        horasTotales: 40,
+        horasClase: 24
+      }
+    };
+  }
+
+  // Método para obtener las horas según el tipo de profesor
+  getHorasPorTipo(tipo) {
+    return this.tiposProfesor[tipo] || this.tiposProfesor['medio_tiempo'];
+  }
+
+  // Método para validar el tipo de profesor
+  validarTipo(tipo) {
+    return Object.keys(this.tiposProfesor).includes(tipo);
   }
 
   async getAll() {
@@ -31,13 +59,24 @@ class Profesor {
 
   async create(profesorData) {
     const profesores = await this.getAll();
+    
+    // Validar y obtener el tipo de profesor
+    const tipo = profesorData.tipo || 'medio_tiempo';
+    if (!this.validarTipo(tipo)) {
+      throw new Error('Tipo de profesor inválido');
+    }
+    
+    const horasConfig = this.getHorasPorTipo(tipo);
+    
     const newProfesor = {
       id: Date.now().toString(),
       nombre: profesorData.nombre,
       apellido: profesorData.apellido,
       email: profesorData.email,
       especialidad: profesorData.especialidad,
-      maxHorasSemana: parseInt(profesorData.maxHorasSemana) || 20,
+      tipo: tipo,
+      maxHorasTotales: horasConfig.horasTotales,
+      maxHorasClase: horasConfig.horasClase,
       horarios: [],
       createdAt: new Date().toISOString()
     };
@@ -72,6 +111,14 @@ class Profesor {
     console.log('Modelo: Profesor encontrado:', profesores[index]);
     console.log('Modelo: Datos a actualizar:', profesorData);
 
+    // Validar y obtener el tipo de profesor
+    const tipo = profesorData.tipo || profesores[index].tipo || 'medio_tiempo';
+    if (!this.validarTipo(tipo)) {
+      throw new Error('Tipo de profesor inválido');
+    }
+    
+    const horasConfig = this.getHorasPorTipo(tipo);
+
     // Preservar el ID original y otros campos importantes
     const profesorActualizado = {
       ...profesores[index],
@@ -80,7 +127,9 @@ class Profesor {
       apellido: profesorData.apellido,
       email: profesorData.email,
       especialidad: profesorData.especialidad,
-      maxHorasSemana: parseInt(profesorData.maxHorasSemana) || 20,
+      tipo: tipo,
+      maxHorasTotales: horasConfig.horasTotales,
+      maxHorasClase: horasConfig.horasClase,
       horarios: profesores[index].horarios || [], // Preservar horarios existentes
       createdAt: profesores[index].createdAt, // Preservar fecha de creación
       updatedAt: new Date().toISOString()
@@ -168,8 +217,9 @@ class Profesor {
       profesor: profesor,
       horasPorDia: horasPorDia,
       totalHoras: totalHoras,
-      maxHoras: profesor.maxHorasSemana,
-      disponible: profesor.maxHorasSemana - totalHoras
+      maxHorasClase: profesor.maxHorasClase || profesor.maxHorasSemana || 20,
+      maxHorasTotales: profesor.maxHorasTotales || 40,
+      disponible: (profesor.maxHorasClase || profesor.maxHorasSemana || 20) - totalHoras
     };
   }
 
@@ -199,17 +249,18 @@ class Profesor {
       }
     });
 
-    // Verificar límite de horas semanales
+    // Verificar límite de horas de clase semanales
     const cargaActual = await this.getCargaHoraria(profesorId);
     const horasNuevoHorario = parseInt(nuevoHorario.horaFin) - parseInt(nuevoHorario.horaInicio);
+    const maxHorasClase = profesor.maxHorasClase || profesor.maxHorasSemana || 20;
     
-    if (cargaActual.totalHoras + horasNuevoHorario > profesor.maxHorasSemana) {
+    if (cargaActual.totalHoras + horasNuevoHorario > maxHorasClase) {
       conflictos.push({
         tipo: 'limite_horas',
-        mensaje: `Excede el límite de ${profesor.maxHorasSemana} horas semanales. Actual: ${cargaActual.totalHoras}, Nuevo: +${horasNuevoHorario}`,
+        mensaje: `Excede el límite de ${maxHorasClase} horas de clase semanales. Actual: ${cargaActual.totalHoras}, Nuevo: +${horasNuevoHorario}`,
         horasActuales: cargaActual.totalHoras,
         horasNuevas: horasNuevoHorario,
-        limite: profesor.maxHorasSemana
+        limite: maxHorasClase
       });
     }
 

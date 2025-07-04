@@ -1,44 +1,176 @@
-<div class="materia-show">
-  <div class="page-header">
-    <div class="page-title">
-      <h2><%= materia.nombre %></h2>
-      <p>Código: <%= materia.codigo %></p>
-    </div>
-    <div class="page-actions">
-      <a href="/materias/<%= materia.id %>/edit" class="btn btn-primary">
-        <i class="fas fa-edit"></i> Editar
-      </a>
+<div class="materia-detail">
+  <div class="detail-header">
+    <h2>Detalles de la Materia</h2>
+    <div class="header-actions">
       <a href="/materias" class="btn btn-secondary">
         <i class="fas fa-arrow-left"></i> Volver
       </a>
+      <a href="/materias/<%= materia.id %>/edit" class="btn btn-primary">
+        <i class="fas fa-edit"></i> Editar
+      </a>
     </div>
   </div>
 
-  <div class="content-section">
-    <ul class="list-group">
-      <li class="list-group-item"><strong>Créditos:</strong> <%= materia.creditos %></li>
-      <li class="list-group-item"><strong>Semestre:</strong> <%= materia.semestre %></li>
-      <li class="list-group-item"><strong>Horas Teoría:</strong> <%= materia.horasTeoria %></li>
-      <li class="list-group-item"><strong>Horas Práctica:</strong> <%= materia.horasPractica %></li>
-      <li class="list-group-item"><strong>Horas Laboratorio:</strong> <%= materia.horasLaboratorio %></li>
-      <li class="list-group-item"><strong>Total Horas:</strong> <%= totalHoras %></li>
-      <li class="list-group-item"><strong>Horas por Semestre:</strong> <%= horasSemestrales %></li>
-    </ul>
+  <div class="detail-content">
+    <div class="info-grid">
+      <div class="info-card">
+        <h3>Información General</h3>
+        <div class="info-item">
+          <label>Nombre:</label>
+          <span><%= materia.nombre %></span>
+        </div>
+        <div class="info-item">
+          <label>Código:</label>
+          <span class="badge badge-info"><%= materia.codigo %></span>
+        </div>
+        <div class="info-item">
+          <label>Créditos:</label>
+          <span><%= materia.creditos %></span>
+        </div>
+        <div class="info-item">
+          <label>Semestre:</label>
+          <span class="badge badge-primary"> <%= materia.semestre %> </span>
+        </div>
+      </div>
+      <div class="info-card">
+        <h3>Horas</h3>
+        <div class="info-item">
+          <label>Teoría:</label>
+          <span class="badge badge-primary"><%= materia.horasTeoria %>h</span>
+        </div>
+        <div class="info-item">
+          <label>Práctica:</label>
+          <span class="badge badge-success"><%= materia.horasPractica %>h</span>
+        </div>
+        <div class="info-item">
+          <label>Laboratorio:</label>
+          <span class="badge badge-warning"><%= materia.horasLaboratorio %>h</span>
+        </div>
+        <div class="info-item">
+          <label>Total Horas/Semana:</label>
+          <span class="badge badge-dark"><%= totalHoras %>h</span>
+        </div>
+        <div class="info-item">
+          <label>Horas por Semestre:</label>
+          <span class="badge badge-secondary"><%= horasSemestrales %>h</span>
+        </div>
+      </div>
+    </div>
 
-    <h3>Prerequisitos</h3>
-    <% if (prerequisitos.length === 0) { %>
-      <p>Sin prerequisitos</p>
-    <% } else { %>
-      <ul>
-        <% prerequisitos.forEach(p => { %>
-          <li><%= p.nombre %> (<%= p.codigo %>)</li>
-        <% }) %>
-      </ul>
-    <% } %>
+    <div class="info-card mt-4">
+      <h3>Prerequisitos</h3>
+      <% if (prerequisitos.length === 0) { %>
+        <span class="badge badge-secondary">Sin prerequisitos</span>
+      <% } else { %>
+        <ul>
+          <% prerequisitos.forEach(p => { %>
+            <li><%= p.nombre %> (<%= p.codigo %>)</li>
+          <% }) %>
+        </ul>
+      <% } %>
+    </div>
 
     <% if (materia.descripcion) { %>
+    <div class="info-card mt-4">
       <h3>Descripción</h3>
       <p><%= materia.descripcion %></p>
+    </div>
     <% } %>
   </div>
 </div>
+
+<style>
+.materia-detail .detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding: 20px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.materia-detail .header-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.detail-content {
+  margin-top: 20px;
+}
+
+.info-grid {
+  display: flex;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+
+.info-card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+  padding: 20px 25px 15px 25px;
+  min-width: 260px;
+  flex: 1 1 260px;
+  margin-bottom: 20px;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.info-item label {
+  font-weight: 500;
+  color: #495057;
+}
+
+.badge-info {
+  background-color: #17a2b8;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+.badge-primary {
+  background-color: #007bff;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+.badge-success {
+  background-color: #28a745;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+.badge-warning {
+  background-color: #ffc107;
+  color: #212529;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+.badge-dark {
+  background-color: #343a40;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+.badge-secondary {
+  background-color: #6c757d;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+.mt-4 {
+  margin-top: 24px;
+}
+</style>

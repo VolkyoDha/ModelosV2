@@ -37,6 +37,7 @@
                     <tr>
                         <th data-sort="nombre">Nombre</th>
                         <th data-sort="especialidad">Especialidad</th>
+                        <th data-sort="tipo">Tipo de Contrato</th>
                         <th data-sort="email">Email</th>
                         <th data-sort="horas">Horas Asignadas</th>
                         <th data-sort="estado">Estado</th>
@@ -63,25 +64,43 @@
                                 <span class="badge badge-primary"><%= profesor.especialidad %></span>
                             </td>
                             <td>
+                                <% if (profesor.tipo === 'tiempo_parcial') { %>
+                                    <span class="badge badge-info">Tiempo Parcial</span>
+                                    <small class="contract-hours">8h clase / 10h total</small>
+                                <% } else if (profesor.tipo === 'medio_tiempo') { %>
+                                    <span class="badge badge-warning">Medio Tiempo</span>
+                                    <small class="contract-hours">16h clase / 20h total</small>
+                                <% } else if (profesor.tipo === 'tiempo_completo') { %>
+                                    <span class="badge badge-success">Tiempo Completo</span>
+                                    <small class="contract-hours">24h clase / 40h total</small>
+                                <% } else { %>
+                                    <span class="badge badge-secondary">No especificado</span>
+                                    <small class="contract-hours"><%= profesor.maxHorasSemana || 20 %>h</small>
+                                <% } %>
+                            </td>
+                            <td>
                                 <a href="mailto:<%= profesor.email %>" class="email-link">
                                     <%= profesor.email %>
                                 </a>
                             </td>
                             <td>
-                                <% const horasAsignadas = profesor.horarios.reduce((total, h) => total + (parseInt(h.horaFin) - parseInt(h.horaInicio)), 0); %>
+                                <% 
+                                const horasAsignadas = profesor.horarios.reduce((total, h) => total + (parseInt(h.horaFin) - parseInt(h.horaInicio)), 0);
+                                const maxHorasClase = profesor.maxHorasClase || profesor.maxHorasSemana || 20;
+                                %>
                                 <div class="hours-info">
-                                    <span class="hours-text"><%= horasAsignadas %>h / <%= profesor.maxHorasSemana %>h</span>
+                                    <span class="hours-text"><%= horasAsignadas %>h / <%= maxHorasClase %>h</span>
                                     <div class="progress-bar">
-                                        <div class="progress-fill" style="width: <%= Math.min(100, (horasAsignadas / profesor.maxHorasSemana) * 100) %>%"></div>
+                                        <div class="progress-fill" style="width: <%= Math.min(100, (horasAsignadas / maxHorasClase) * 100) %>%"></div>
                                     </div>
                                 </div>
                             </td>
                             <td>
                                 <% if (horasAsignadas === 0) { %>
                                     <span class="badge badge-secondary">Sin horarios</span>
-                                <% } else if (horasAsignadas >= profesor.maxHorasSemana) { %>
+                                <% } else if (horasAsignadas >= maxHorasClase) { %>
                                     <span class="badge badge-danger">Completo</span>
-                                <% } else if (horasAsignadas >= profesor.maxHorasSemana * 0.8) { %>
+                                <% } else if (horasAsignadas >= maxHorasClase * 0.8) { %>
                                     <span class="badge badge-warning">Casi completo</span>
                                 <% } else { %>
                                     <span class="badge badge-success">Disponible</span>
@@ -297,6 +316,39 @@ document.addEventListener('DOMContentLoaded', function() {
 .action-buttons {
     display: flex;
     gap: 5px;
+}
+
+.contract-hours {
+    display: block;
+    margin-top: 4px;
+    font-size: 10px;
+    color: #666;
+    font-weight: normal;
+}
+
+.badge-info {
+    background-color: #17a2b8;
+    color: white;
+}
+
+.badge-warning {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.badge-success {
+    background-color: #28a745;
+    color: white;
+}
+
+.badge-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.badge-danger {
+    background-color: #dc3545;
+    color: white;
 }
 
 .empty-state {

@@ -1,6 +1,7 @@
 const Horario = require('../models/Horario');
 const Profesor = require('../models/Profesor');
 const Materia = require('../models/Materia');
+const horarioBacktracking = require('../modules/horarioBacktracking');
 
 class HorariosController {
   // Mostrar página principal de horarios
@@ -48,10 +49,10 @@ class HorariosController {
     try {
       const materiasIds = req.body.materias || [];
       const profesoresIds = req.body.profesores || [];
-      const restricciones = {
-        diasExcluidos: req.body.diasExcluidos || [],
-        horasExcluidas: req.body.horasExcluidas ? req.body.horasExcluidas.map(h => parseInt(h)) : []
-      };
+      const maxHoursPerDay = parseInt(req.body.maxHoursPerDay) || 8;
+      const preferredStartTime = parseInt(req.body.preferredStartTime) || 8;
+      const preferredEndTime = parseInt(req.body.preferredEndTime) || 18;
+      const avoidWeekends = req.body.avoidWeekends === 'on' || req.body.avoidWeekends === true;
 
       if (materiasIds.length === 0) {
         return res.render('horarios/calcular', {
@@ -73,17 +74,52 @@ class HorariosController {
         });
       }
 
-      const horarioSugerido = await Horario.calcularHorarioSugerido(
-        materiasIds, 
-        profesoresIds, 
-        restricciones
-      );
+      // Obtener datos completos
+      const materiasAll = await Materia.getAll();
+      const profesoresAll = await Profesor.getAll();
+      const materias = materiasAll.filter(m => materiasIds.includes(m.id));
+      const profesores = profesoresAll.filter(p => profesoresIds.includes(p.id));
 
-      res.render('horarios/resultado', {
-        title: 'Horario Sugerido',
-        horarioSugerido: horarioSugerido,
-        materiasSeleccionadas: materiasIds,
-        profesoresSeleccionados: profesoresIds
+      // Generar slots de horarios disponibles
+      const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+      if (!avoidWeekends) dias.push('Sábado');
+      const horariosDisponibles = [];
+      for (const dia of dias) {
+        for (let h = preferredStartTime; h + 1 <= preferredEndTime; h++) {
+          if (h === 12) continue; // Saltar almuerzo
+          horariosDisponibles.push({ dia, horaInicio: h, horaFin: h + 1 });
+        }
+      }
+
+      // Mapear materias y profesores para el algoritmo
+      const materiasInput = materias.map(m => ({
+        nombre: m.nombre,
+        codigo: m.codigo,
+        semestre: m.semestre
+      }));
+      const profesoresInput = profesores.map(p => ({
+        id: p.id,
+        nombre: p.nombre + ' ' + (p.apellido || ''),
+        tipo: p.tipo,
+        maxHorasClase: p.maxHorasClase || 20,
+        materias: p.materias || [],
+        disponibilidad: p.disponibilidad || null
+      }));
+
+      // Ejecutar algoritmo de backtracking
+      const resultado = horarioBacktracking.asignarHorariosBacktracking({
+        profesores: profesoresInput,
+        materias: materiasInput,
+        horariosDisponibles,
+        opciones: { avoidWeekends }
+      });
+
+      // Renderizar la misma vista con el resultado
+      res.render('horarios/calcular', {
+        title: 'Calcular Horario Sugerido',
+        profesores: await Profesor.getAll(),
+        materias: await Materia.getAll(),
+        resultado
       });
     } catch (error) {
       res.render('error', {

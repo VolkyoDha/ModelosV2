@@ -210,6 +210,49 @@
   </div>
 </div>
 
+<!-- Tabla de resumen de profesores y horarios -->
+<div class="professors-summary-table mt-5">
+  <h3>Resumen de Profesores y Horarios Asignados</h3>
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Profesor</th>
+        <th>Materias que dicta</th>
+        <th>Días y Horas Asignadas</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% resumen.profesores.forEach(profesor => { %>
+        <tr>
+          <td><%= profesor.nombre %></td>
+          <td>
+            <% if (profesor.materias && profesor.materias.length > 0) { %>
+              <ul>
+                <% profesor.materias.forEach(m => { %>
+                  <li><%= m.nombre %></li>
+                <% }) %>
+              </ul>
+            <% } else { %>
+              <span>Sin materias asignadas</span>
+            <% } %>
+          </td>
+          <td>
+            <% if (profesor.horarios && profesor.horarios.length > 0) { %>
+              <ul>
+                <% profesor.horarios.forEach(h => { %>
+                  <li><%= h.dia %> <%= h.horaInicio %>-<%= h.horaFin %></li>
+                <% }) %>
+              </ul>
+            <% } else { %>
+              <span>Sin horarios asignados</span>
+            <% } %>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+
 <script>
 function exportSummary() {
   // Implementar exportación de resumen

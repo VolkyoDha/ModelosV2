@@ -28,8 +28,26 @@
           <span><%= profesor.especialidad %></span>
         </div>
         <div class="info-item">
-          <label>Máximo de Horas/Semana:</label>
-          <span><%= profesor.maxHorasSemana %> horas</span>
+          <label>Tipo de Contrato:</label>
+          <span class="contract-type">
+            <% if (profesor.tipo === 'tiempo_parcial') { %>
+              <span class="badge badge-info">Tiempo Parcial</span>
+            <% } else if (profesor.tipo === 'medio_tiempo') { %>
+              <span class="badge badge-warning">Medio Tiempo</span>
+            <% } else if (profesor.tipo === 'tiempo_completo') { %>
+              <span class="badge badge-success">Tiempo Completo</span>
+            <% } else { %>
+              <span class="badge badge-secondary">No especificado</span>
+            <% } %>
+          </span>
+        </div>
+        <div class="info-item">
+          <label>Horas Totales:</label>
+          <span><%= profesor.maxHorasTotales || profesor.maxHorasSemana || 20 %> horas</span>
+        </div>
+        <div class="info-item">
+          <label>Horas de Clase:</label>
+          <span><%= profesor.maxHorasClase || profesor.maxHorasSemana || 20 %> horas</span>
         </div>
       </div>
 
@@ -45,10 +63,10 @@
         </div>
         <div class="info-item">
           <label>Porcentaje de Uso:</label>
-          <span><%= Math.round((cargaHoraria.totalHoras / profesor.maxHorasSemana) * 100) %>%</span>
+          <span><%= Math.round((cargaHoraria.totalHoras / (profesor.maxHorasClase || profesor.maxHorasSemana || 20)) * 100) %>%</span>
         </div>
         <div class="progress-bar">
-          <div class="progress-fill" style="width: <%= Math.min((cargaHoraria.totalHoras / profesor.maxHorasSemana) * 100, 100) %>%"></div>
+          <div class="progress-fill" style="width: <%= Math.min((cargaHoraria.totalHoras / (profesor.maxHorasClase || profesor.maxHorasSemana || 20)) * 100, 100) %>%"></div>
         </div>
       </div>
     </div>
@@ -114,4 +132,31 @@
     </div>
     <% } %>
   </div>
-</div> 
+</div>
+
+<style>
+.contract-type .badge {
+  font-size: 12px;
+  padding: 4px 8px;
+}
+
+.badge-info {
+  background-color: #17a2b8;
+  color: white;
+}
+
+.badge-warning {
+  background-color: #ffc107;
+  color: #212529;
+}
+
+.badge-success {
+  background-color: #28a745;
+  color: white;
+}
+
+.badge-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+</style> 

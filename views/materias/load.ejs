@@ -11,10 +11,10 @@
   </div>
 
   <div class="content-section">
-    <form action="/materias/load" method="POST" enctype="multipart/form-data">
+    <form action="/cargar-malla" method="POST" enctype="multipart/form-data">
       <div class="form-group">
-        <label for="archivo" class="form-label">Archivo JSON</label>
-        <input type="file" id="archivo" name="archivo" accept="application/json" class="form-control" required>
+        <label for="archivo" class="form-label">Archivo (.json o .csv)</label>
+        <input type="file" id="archivo" name="archivo" accept=".json,.csv" class="form-control" required>
       </div>
       <% if (typeof error !== 'undefined' && error) { %>
         <div class="alert alert-danger"><%= error %></div>
@@ -23,7 +23,7 @@
         <div class="alert alert-success"><%= success %></div>
       <% } %>
       <button type="submit" class="btn btn-primary">
-        <i class="fas fa-upload"></i> Cargar
+        <i class="fas fa-upload"></i> Subir y Procesar
       </button>
     </form>
   </div>
