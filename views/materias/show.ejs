@@ -1,0 +1,44 @@
+<div class="materia-show">
+  <div class="page-header">
+    <div class="page-title">
+      <h2><%= materia.nombre %></h2>
+      <p>Código: <%= materia.codigo %></p>
+    </div>
+    <div class="page-actions">
+      <a href="/materias/<%= materia.id %>/edit" class="btn btn-primary">
+        <i class="fas fa-edit"></i> Editar
+      </a>
+      <a href="/materias" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Volver
+      </a>
+    </div>
+  </div>
+
+  <div class="content-section">
+    <ul class="list-group">
+      <li class="list-group-item"><strong>Créditos:</strong> <%= materia.creditos %></li>
+      <li class="list-group-item"><strong>Semestre:</strong> <%= materia.semestre %></li>
+      <li class="list-group-item"><strong>Horas Teoría:</strong> <%= materia.horasTeoria %></li>
+      <li class="list-group-item"><strong>Horas Práctica:</strong> <%= materia.horasPractica %></li>
+      <li class="list-group-item"><strong>Horas Laboratorio:</strong> <%= materia.horasLaboratorio %></li>
+      <li class="list-group-item"><strong>Total Horas:</strong> <%= totalHoras %></li>
+      <li class="list-group-item"><strong>Horas por Semestre:</strong> <%= horasSemestrales %></li>
+    </ul>
+
+    <h3>Prerequisitos</h3>
+    <% if (prerequisitos.length === 0) { %>
+      <p>Sin prerequisitos</p>
+    <% } else { %>
+      <ul>
+        <% prerequisitos.forEach(p => { %>
+          <li><%= p.nombre %> (<%= p.codigo %>)</li>
+        <% }) %>
+      </ul>
+    <% } %>
+
+    <% if (materia.descripcion) { %>
+      <h3>Descripción</h3>
+      <p><%= materia.descripcion %></p>
+    <% } %>
+  </div>
+</div>
