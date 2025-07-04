@@ -16,10 +16,10 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware de logging para depuración
-app.use((req, res, next) => {
-  console.log('Método:', req.method, 'URL:', req.url, 'Body:', req.body);
-  next();
-});
+// app.use((req, res, next) => {
+//   console.log('Método:', req.method, 'URL:', req.url, 'Body:', req.body);
+//   next();
+// });
 
 // Configuración de middleware
 app.use(bodyParser.urlencoded({ extended: true }));
