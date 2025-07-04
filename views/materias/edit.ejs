@@ -1,0 +1,82 @@
+<div class="materia-edit">
+  <div class="edit-header">
+    <h2>Editar Materia</h2>
+    <div class="header-actions">
+      <a href="/materias/<%= materia.id %>" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Volver
+      </a>
+    </div>
+  </div>
+
+  <div class="edit-content">
+    <form action="/materias/<%= materia.id %>" method="POST" class="edit-form">
+      <input type="hidden" name="_method" value="PUT">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="codigo" class="form-label">Código *</label>
+          <input type="text" id="codigo" name="codigo" class="form-control" value="<%= materia.codigo %>" required>
+        </div>
+        <div class="form-group">
+          <label for="nombre" class="form-label">Nombre *</label>
+          <input type="text" id="nombre" name="nombre" class="form-control" value="<%= materia.nombre %>" required>
+        </div>
+        <div class="form-group">
+          <label for="creditos" class="form-label">Créditos *</label>
+          <input type="number" id="creditos" name="creditos" class="form-control" value="<%= materia.creditos %>" min="1" required>
+        </div>
+        <div class="form-group">
+          <label for="semestre" class="form-label">Semestre *</label>
+          <input type="number" id="semestre" name="semestre" class="form-control" value="<%= materia.semestre %>" min="1" required>
+        </div>
+        <div class="form-group">
+          <label for="horasTeoria" class="form-label">Horas Teoría *</label>
+          <input type="number" id="horasTeoria" name="horasTeoria" class="form-control" value="<%= materia.horasTeoria %>" min="0" required>
+        </div>
+        <div class="form-group">
+          <label for="horasPractica" class="form-label">Horas Práctica *</label>
+          <input type="number" id="horasPractica" name="horasPractica" class="form-control" value="<%= materia.horasPractica %>" min="0" required>
+        </div>
+        <div class="form-group">
+          <label for="horasLaboratorio" class="form-label">Horas Laboratorio *</label>
+          <input type="number" id="horasLaboratorio" name="horasLaboratorio" class="form-control" value="<%= materia.horasLaboratorio %>" min="0" required>
+        </div>
+        <div class="form-group">
+          <label for="prerequisitos" class="form-label">Prerequisitos</label>
+          <select id="prerequisitos" name="prerequisitos" class="form-control" multiple>
+            <% materias.forEach(m => { %>
+              <option value="<%= m.id %>" <%= materia.prerequisitos && materia.prerequisitos.includes(m.id) ? 'selected' : '' %>><%= m.codigo %> - <%= m.nombre %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="descripcion" class="form-label">Descripción</label>
+          <textarea id="descripcion" name="descripcion" class="form-control"><%= materia.descripcion %></textarea>
+        </div>
+      </div>
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div class="alert alert-danger"><%= error %></div>
+      <% } %>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-save"></i> Guardar Cambios
+        </button>
+        <a href="/materias/<%= materia.id %>" class="btn btn-secondary">
+          <i class="fas fa-times"></i> Cancelar
+        </a>
+      </div>
+    </form>
+
+    <div class="danger-zone">
+      <h3>Zona de Peligro</h3>
+      <div class="danger-content">
+        <p>Esta acción no se puede deshacer. Se eliminará permanentemente la materia.</p>
+        <form action="/materias/<%= materia.id %>" method="POST" class="delete-form" onsubmit="return confirm('¿Está seguro de que desea eliminar esta materia?');">
+          <input type="hidden" name="_method" value="DELETE">
+          <button type="submit" class="btn btn-danger">
+            <i class="fas fa-trash"></i> Eliminar Materia
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

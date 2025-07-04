@@ -1,0 +1,26 @@
+<div class="materia-semestre">
+  <div class="page-header">
+    <div class="page-title">
+      <h2>Materias del Semestre <%= semestre %></h2>
+    </div>
+    <div class="page-actions">
+      <a href="/materias" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Volver
+      </a>
+    </div>
+  </div>
+
+  <div class="content-section">
+    <% if (materias.length === 0) { %>
+      <p>No hay materias registradas para este semestre.</p>
+    <% } else { %>
+      <ul class="list-group">
+        <% materias.forEach(m => { %>
+          <li class="list-group-item">
+            <a href="/materias/<%= m.id %>"><%= m.codigo %> - <%= m.nombre %></a>
+          </li>
+        <% }) %>
+      </ul>
+    <% } %>
+  </div>
+</div>

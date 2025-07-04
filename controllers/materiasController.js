@@ -50,7 +50,7 @@ class MateriasController {
       };
 
       await Materia.create(materiaData);
-      req.flash = { success: 'Materia agregada exitosamente' };
+      req.flash('success', 'Materia agregada exitosamente');
       res.redirect('/materias');
     } catch (error) {
       const materias = await Materia.getAll();
@@ -134,7 +134,7 @@ class MateriasController {
       };
 
       await Materia.update(req.params.id, materiaData);
-      req.flash = { success: 'Materia actualizada exitosamente' };
+      req.flash('success', 'Materia actualizada exitosamente');
       res.redirect('/materias');
     } catch (error) {
       const materia = await Materia.getById(req.params.id);
