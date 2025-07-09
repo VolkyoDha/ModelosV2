@@ -9,7 +9,7 @@
   </div>
 
   <div class="edit-content">
-    <form action="/profesores/<%= profesor.id %>" method="POST" class="edit-form">
+    <form action="/profesores/<%= profesor.id %>?_method=PUT" method="POST" >
       <input type="hidden" name="_method" value="PUT">
       
       <div class="form-grid">

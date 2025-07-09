@@ -8,7 +8,10 @@
     "maxHorasSemana": 25,
     "horarios": [],
     "createdAt": "2024-01-01T00:00:00.000Z",
-    "updatedAt": "2025-07-04T00:03:53.570Z"
+    "updatedAt": "2025-07-09T01:43:20.330Z",
+    "tipo": "medio_tiempo",
+    "maxHorasTotales": 20,
+    "maxHorasClase": 16
   },
   {
     "id": "3",
@@ -18,7 +21,11 @@
     "especialidad": "Programación",
     "maxHorasSemana": 22,
     "horarios": [],
-    "createdAt": "2024-01-01T00:00:00.000Z"
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "tipo": "medio_tiempo",
+    "maxHorasTotales": 20,
+    "maxHorasClase": 16,
+    "updatedAt": "2025-07-09T01:43:27.034Z"
   },
   {
     "id": "1751423071831",
@@ -28,6 +35,22 @@
     "especialidad": "Física",
     "maxHorasSemana": 40,
     "horarios": [],
-    "createdAt": "2025-07-02T02:24:31.831Z"
+    "createdAt": "2025-07-02T02:24:31.831Z",
+    "tipo": "tiempo_completo",
+    "maxHorasTotales": 40,
+    "maxHorasClase": 24,
+    "updatedAt": "2025-07-09T01:43:35.623Z"
+  },
+  {
+    "id": "1752025385067",
+    "nombre": "ing Ricardo",
+    "apellido": "Guaman Cayachi",
+    "email": "ricardo.guaman@uce.edu.ec",
+    "especialidad": "Fisica 2",
+    "tipo": "medio_tiempo",
+    "maxHorasTotales": 20,
+    "maxHorasClase": 16,
+    "horarios": [],
+    "createdAt": "2025-07-09T01:43:05.067Z"
   }
 ]
