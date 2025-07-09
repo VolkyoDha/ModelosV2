@@ -1,70 +1,146 @@
-// Módulo para asignación de horarios a profesores usando backtracking
+// Módulo para asignación de horarios a profesores usando backtracking optimizado
 
 /**
- * Asigna horarios a profesores usando backtracking.
+ * Asigna horarios a profesores usando backtracking con optimizaciones.
  * @param {Array} profesores - Lista de profesores (id, nombre, tipo, maxHorasClase, materias, disponibilidad).
  * @param {Array} materias - Lista de materias (nombre, codigo, semestre, profesorAsignado).
  * @param {Array} horariosDisponibles - Lista de objetos { dia, horaInicio, horaFin }.
- * @param {Object} opciones - Restricciones adicionales.
- * @returns {Object} - Asignaciones por profesor.
+ * @param {Object} opciones - Restricciones adicionales y configuración.
+ * @returns {Object} - Asignaciones por profesor con estadísticas.
  */
 function asignarHorariosBacktracking({ profesores, materias, horariosDisponibles, opciones = {} }) {
-  // Ordenar materias por semestre descendente
-  const materiasOrdenadas = [...materias].sort((a, b) => b.semestre - a.semestre);
+  console.time('tiempoAsignacion');
+  
+  const TIEMPO_LIMITE_MS = opciones.tiempoLimite || 30000;
+  const tiempoInicio = Date.now();
+  let mejorSolucion = null;
+  let mejorPuntuacion = -1;
+  let nodosExplorados = 0;
+  let podas = 0;
+  
+  const estadosFallidos = new Set();
+  const materiasConDificultad = materias.map(materia => {
+    const profesoresDisponibles = profesores.filter(p => p.materias.includes(materia.codigo)).length;
+    const dificultad = (materia.semestre * 10) + (20 / profesoresDisponibles);
+    return { ...materia, dificultad };
+  });
+  
+  const materiasOrdenadas = [...materiasConDificultad].sort((a, b) => b.dificultad - a.dificultad);
+  console.log(`Materias ordenadas por dificultad: ${materiasOrdenadas.map(m => `${m.nombre}(${m.dificultad.toFixed(1)})`).join(', ')}`);
+  
+  const profesoresPorMateria = {};
+  materiasOrdenadas.forEach(materia => {
+    profesoresPorMateria[materia.codigo] = profesores
+      .filter(p => p.materias.includes(materia.codigo))
+      .sort((a, b) => a.materias.length - b.materias.length);
+  });
+  
+  const horariosCompatibles = {};
+  profesores.forEach(profesor => {
+    horariosCompatibles[profesor.id] = horariosDisponibles.filter(horario => {
+      if (profesor.disponibilidad) {
+        return profesor.disponibilidad.some(disp => 
+          disp.dia === horario.dia &&
+          disp.horaInicio <= horario.horaInicio &&
+          disp.horaFin >= horario.horaFin
+        );
+      }
+      return true;
+    });
+    
+    horariosCompatibles[profesor.id] = horariosCompatibles[profesor.id]
+      .filter(h => !(h.horaInicio < 13 && h.horaFin > 12));
+      
+    if (opciones.avoidWeekends) {
+      horariosCompatibles[profesor.id] = horariosCompatibles[profesor.id]
+        .filter(h => h.dia !== 'Sábado' && h.dia !== 'Domingo');
+    }
+  });
 
-  // Estado de asignaciones: { profesorId: [ { materia, dia, horaInicio, horaFin } ] }
   const asignaciones = {};
   profesores.forEach(p => asignaciones[p.id] = []);
 
-  // Estado de horarios ocupados: { dia: { horaInicio-horaFin: profesorId } }
   const ocupados = {};
   horariosDisponibles.forEach(h => {
     if (!ocupados[h.dia]) ocupados[h.dia] = {};
     ocupados[h.dia][`${h.horaInicio}-${h.horaFin}`] = null;
   });
-
-  // Validación de restricciones para una asignación tentativa
+  
+  function obtenerHashEstado(idx) {
+    let hash = `${idx}|`;
+    profesores.forEach(p => {
+      hash += `${p.id}:[${asignaciones[p.id].map(a => `${a.codigo}-${a.dia}-${a.horaInicio}`).join(',')}];`;
+    });
+    return hash;
+  }
   function esValido(profesor, materia, horario) {
-    // 1. El profesor debe dictar la materia
-    if (!profesor.materias.includes(materia.codigo)) return false;
-    // 2. No más de 2 clases por día
+    nodosExplorados++;
     const clasesDia = asignaciones[profesor.id].filter(a => a.dia === horario.dia).length;
-    if (clasesDia >= 2) return false;
-    // 3. No clases en horario de almuerzo
-    if (horario.horaInicio < 13 && horario.horaFin > 12) return false;
-    // 4. No solapamientos
+    if (clasesDia >= 2) {
+      podas++;
+      return false;
+    }
+    
     for (const a of asignaciones[profesor.id]) {
       if (a.dia === horario.dia && (
         (horario.horaInicio < a.horaFin && horario.horaFin > a.horaInicio)
-      )) return false;
+      )) {
+        podas++;
+        return false;
+      }
     }
-    // 5. No sobrecarga de horas
+    
     const horasAsignadas = asignaciones[profesor.id].reduce((sum, a) => sum + (a.horaFin - a.horaInicio), 0);
-    if (horasAsignadas + (horario.horaFin - horario.horaInicio) > profesor.maxHorasClase) return false;
-    // 6. El horario debe estar disponible
-    if (ocupados[horario.dia][`${horario.horaInicio}-${horario.horaFin}`]) return false;
-    // 7. Restricción de disponibilidad del profesor
-    if (profesor.disponibilidad) {
-      const disponible = profesor.disponibilidad.some(disp =>
-        disp.dia === horario.dia &&
-        disp.horaInicio <= horario.horaInicio &&
-        disp.horaFin >= horario.horaFin
-      );
-      if (!disponible) return false;
+    if (horasAsignadas + (horario.horaFin - horario.horaInicio) > profesor.maxHorasClase) {
+      podas++;
+      return false;
     }
-    // 8. Restricción de evitar fines de semana
-    if (opciones.avoidWeekends && (horario.dia === 'Sábado' || horario.dia === 'Domingo')) return false;
+    
+    if (ocupados[horario.dia][`${horario.horaInicio}-${horario.horaFin}`]) {
+      podas++;
+      return false;
+    }
+    
     return true;
   }
 
-  // Backtracking principal
   function backtrack(idx) {
-    if (idx === materiasOrdenadas.length) return true; // Todas asignadas
+    if (Date.now() - tiempoInicio > TIEMPO_LIMITE_MS) {
+      console.log(`Se alcanzó el límite de tiempo (${TIEMPO_LIMITE_MS/1000}s). Retornando mejor solución parcial.`);
+      return false;
+    }
+    if (idx === materiasOrdenadas.length) {
+      const solucion = JSON.parse(JSON.stringify(asignaciones));
+      const puntuacion = calcularPuntuacion(solucion);
+      
+      if (puntuacion > mejorPuntuacion) {
+        mejorSolucion = solucion;
+        mejorPuntuacion = puntuacion;
+      }
+      return true;
+    }
+    
+    const estadoActual = obtenerHashEstado(idx);
+    if (estadosFallidos.has(estadoActual)) {
+      podas++;
+      return false;
+    }
+    
     const materia = materiasOrdenadas[idx];
-    // Buscar profesores que pueden dictar la materia
-    const posiblesProfesores = profesores.filter(p => p.materias.includes(materia.codigo));
+    let exito = false;
+    
+    const posiblesProfesores = profesoresPorMateria[materia.codigo];
+    
     for (const profesor of posiblesProfesores) {
-      for (const horario of horariosDisponibles) {
+      const horariosProfesor = horariosCompatibles[profesor.id];
+      
+      const horariosPriorizados = [...horariosProfesor].sort((a, b) => {
+        const clasesA = asignaciones[profesor.id].filter(x => x.dia === a.dia).length;
+        const clasesB = asignaciones[profesor.id].filter(x => x.dia === b.dia).length;
+        return (clasesA === 1) ? -1 : (clasesB === 1) ? 1 : 0;
+      });
+      
+      for (const horario of horariosPriorizados) {
         if (esValido(profesor, materia, horario)) {
           // Asignar
           asignaciones[profesor.id].push({
@@ -75,26 +151,85 @@ function asignarHorariosBacktracking({ profesores, materias, horariosDisponibles
             horaFin: horario.horaFin
           });
           ocupados[horario.dia][`${horario.horaInicio}-${horario.horaFin}`] = profesor.id;
-          // Recursión
-          if (backtrack(idx + 1)) return true;
-          // Deshacer
+          
+          // ---- OPTIMIZACIÓN 5: Guardar solución parcial ----
+          if (idx > materiasOrdenadas.length * 0.7 && !mejorSolucion) {
+            mejorSolucion = JSON.parse(JSON.stringify(asignaciones));
+            mejorPuntuacion = calcularPuntuacion(mejorSolucion);
+          }
+          
+          if (backtrack(idx + 1)) {
+            exito = true;
+            break;
+          }
+          
           asignaciones[profesor.id].pop();
           ocupados[horario.dia][`${horario.horaInicio}-${horario.horaFin}`] = null;
         }
       }
+      
+      if (exito) break;
     }
-    return false; // No se pudo asignar
+    
+    if (!exito) {
+      estadosFallidos.add(estadoActual);
+    }
+    
+    return exito;
+  }
+  
+  function calcularPuntuacion(solucion) {
+    let puntuacion = 0;
+    
+    const materiasAsignadas = new Set();
+    profesores.forEach(p => {
+      solucion[p.id].forEach(a => materiasAsignadas.add(a.codigo));
+    });
+    
+    puntuacion += materiasAsignadas.size * 100;
+    
+    const cargasPorProfesor = profesores.map(p => solucion[p.id].length);
+    const desviacion = calcularDesviacionEstandar(cargasPorProfesor);
+    puntuacion -= desviacion * 5;
+    
+    profesores.forEach(p => {
+      const diasUsados = new Set(solucion[p.id].map(a => a.dia));
+      puntuacion -= diasUsados.size * 2;
+    });
+    
+    return puntuacion;
+  }
+  
+  function calcularDesviacionEstandar(numeros) {
+    const n = numeros.length;
+    if (n === 0) return 0;
+    const media = numeros.reduce((sum, val) => sum + val, 0) / n;
+    const varianza = numeros.reduce((sum, val) => sum + Math.pow(val - media, 2), 0) / n;
+    return Math.sqrt(varianza);
   }
 
   const exito = backtrack(0);
+  
+  const solucionFinal = exito ? asignaciones : mejorSolucion;
+  
+  console.timeEnd('tiempoAsignacion');
+  console.log(`Nodos explorados: ${nodosExplorados}, Podas realizadas: ${podas}`);
+  console.log(`Solución ${exito ? 'completa' : 'parcial'} encontrada con puntuación: ${mejorPuntuacion}`);
+  
   return {
     exito,
-    asignaciones,
-    resumen: generarResumen(asignaciones, profesores)
+    completo: exito,
+    asignaciones: solucionFinal || {},
+    estadisticas: {
+      nodosExplorados,
+      podas,
+      tiempoMs: Date.now() - tiempoInicio,
+      puntuacion: mejorPuntuacion
+    },
+    resumen: solucionFinal ? generarResumen(solucionFinal, profesores) : "No se encontró solución"
   };
 }
 
-// Genera un resumen imprimible
 function generarResumen(asignaciones, profesores) {
   let resumen = '';
   profesores.forEach(p => {

@@ -61,20 +61,6 @@ class IndexController {
     }
   }
 
-  // Mostrar página de ayuda/documentación
-  async ayuda(req, res) {
-    res.render('ayuda', {
-      title: 'Ayuda y Documentación'
-    });
-  }
-
-  // Mostrar página de configuración
-  async configuracion(req, res) {
-    res.render('configuracion', {
-      title: 'Configuración del Sistema'
-    });
-  }
-
   // Mostrar página de estadísticas
   async estadisticas(req, res) {
     try {

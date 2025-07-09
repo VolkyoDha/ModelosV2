@@ -11,12 +11,6 @@ router.get('/estadisticas', indexController.estadisticas);
 // Ruta para búsqueda
 router.get('/buscar', indexController.buscar);
 
-// Ruta para ayuda
-router.get('/ayuda', indexController.ayuda);
-
-// Ruta para configuración
-router.get('/configuracion', indexController.configuracion);
-
 // API para estadísticas
 router.get('/api/estadisticas', indexController.getEstadisticasApi);
 
