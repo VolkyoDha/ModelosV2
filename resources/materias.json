@@ -2,15 +2,16 @@
   {
     "id": "1",
     "codigo": "CS101",
-    "nombre": "Introducción a la Programación",
+    "nombre": "Introducción a la Programación 1",
     "creditos": 4,
     "semestre": 1,
-    "horasTeoria": 3,
+    "horasTeoria": 4,
     "horasPractica": 2,
     "horasLaboratorio": 0,
     "prerequisitos": [],
     "descripcion": "Fundamentos de programación y algoritmos básicos",
-    "createdAt": "2024-01-15T10:00:00.000Z"
+    "createdAt": "2024-01-15T10:00:00.000Z",
+    "updatedAt": "2025-07-11T02:25:31.775Z"
   },
   {
     "id": "2",
@@ -30,7 +31,7 @@
     "codigo": "CS201",
     "nombre": "Estructuras de Datos",
     "creditos": 4,
-    "semestre": 2,
+    "semestre": 3,
     "horasTeoria": 2,
     "horasPractica": 2,
     "horasLaboratorio": 1,
@@ -38,7 +39,8 @@
       "1"
     ],
     "descripcion": "Arrays, listas, pilas, colas y árboles",
-    "createdAt": "2024-01-15T10:00:00.000Z"
+    "createdAt": "2024-01-15T10:00:00.000Z",
+    "updatedAt": "2025-07-10T22:34:31.795Z"
   },
   {
     "id": "4",

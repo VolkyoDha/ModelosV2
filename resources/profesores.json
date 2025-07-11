@@ -8,7 +8,10 @@
     "maxHorasSemana": 25,
     "horarios": [],
     "createdAt": "2024-01-01T00:00:00.000Z",
-    "updatedAt": "2025-07-04T00:03:53.570Z"
+    "updatedAt": "2025-07-10T22:19:22.121Z",
+    "tipo": "medio_tiempo",
+    "maxHorasTotales": 20,
+    "maxHorasClase": 16
   },
   {
     "id": "3",
@@ -29,5 +32,19 @@
     "maxHorasSemana": 40,
     "horarios": [],
     "createdAt": "2025-07-02T02:24:31.831Z"
+  },
+  {
+    "id": "1752186428733",
+    "nombre": "Profe ",
+    "apellido": "Feoooooo",
+    "email": "profefeo@uce.edu.ec",
+    "especialidad": "Fealdad",
+    "tipo": "medio_tiempo",
+    "maxHorasTotales": 20,
+    "maxHorasClase": 16,
+    "horarios": [],
+    "createdAt": "2025-07-10T22:27:08.733Z",
+    "maxHorasSemana": 20,
+    "updatedAt": "2025-07-10T22:31:34.691Z"
   }
 ]

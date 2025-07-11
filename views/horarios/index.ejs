@@ -55,15 +55,27 @@
     </div>
   </div>
 
+  <% if (totalHorarios === 0) { %>
+  <div class="empty-state">
+    <div class="empty-state-icon">
+      <i class="fas fa-calendar-times"></i>
+    </div>
+    <h3>No hay horarios creados</h3>
+    <p>Aún no se han creado horarios en el sistema. Utiliza la opción "Calcular Horarios" para generar un nuevo horario.</p>
+    <a href="/horarios/calcular" class="btn btn-primary btn-lg mt-3">
+      <i class="fas fa-calculator"></i> Calcular Horarios Ahora
+    </a>
+  </div>
+  <% } else { %>
   <div class="schedules-content">
     <div class="content-tabs">
-      <button class="tab-btn active" onclick="showTab('professors')">
+      <button class="tab-btn active" data-tab="professors">
         <i class="fas fa-chalkboard-teacher"></i> Por Profesor
       </button>
-      <button class="tab-btn" onclick="showTab('subjects')">
+      <button class="tab-btn" data-tab="subjects">
         <i class="fas fa-book"></i> Por Materia
       </button>
-      <button class="tab-btn" onclick="showTab('weekly')">
+      <button class="tab-btn" data-tab="weekly">
         <i class="fas fa-calendar-week"></i> Vista Semanal
       </button>
     </div>
@@ -188,6 +200,27 @@
   </div>
 </div>
 
+<!-- Bibliotecas de FullCalendar -->
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/locales/es.js"></script>
+
+<!-- Scripts para el calendario -->
+<!-- Incluir scripts con manejo de errores -->
+<script>
+// Definir variables globales para evitar errores
+window.calendarResources = window.calendarResources || [];
+window.horarioEvents = window.horarioEvents || [];
+</script>
+<script src="/js/resourcesData.js?v=<%= Date.now() %>" onerror="console.error('Error al cargar resourcesData.js');"></script>
+<script src="/js/horarioData.js?v=<%= Date.now() %>" onerror="console.error('Error al cargar horarioData.js');"></script>
+<script src="/js/horarios_fixed.js?v=<%= Date.now() %>" onerror="console.error('Error al cargar horarios_fixed.js');"></script>
+
+<!-- Contenedor para el calendario FullCalendar -->
+<div id="calendar-container" class="calendar-container">
+  <div id="calendar"></div>
+</div>
+
 <script>
 function showTab(tabName) {
   // Ocultar todas las pestañas
@@ -201,9 +234,43 @@ function showTab(tabName) {
   });
   
   // Mostrar la pestaña seleccionada
-  document.getElementById(tabName + '-tab').classList.add('active');
+  const tabElement = document.getElementById(tabName + '-tab');
+  if (tabElement) {
+    tabElement.classList.add('active');
+  }
   
   // Activar el botón correspondiente
-  event.target.classList.add('active');
+  const btnElement = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
+  if (btnElement) {
+    btnElement.classList.add('active');
+  }
+  
+  // Si se selecciona la vista semanal, inicializar el calendario
+  if (tabName === 'weekly') {
+    setTimeout(() => {
+      if (typeof initCalendar === 'function') {
+        initCalendar();
+      } else {
+        console.error('La función initCalendar no está definida');
+      }
+    }, 100);
+  }
 }
+
+// Inicializar el calendario cuando se carga la página si estamos en la vista semanal
+document.addEventListener('DOMContentLoaded', function() {
+  const activeTab = document.querySelector('.tab-btn.active');
+  if (activeTab && activeTab.dataset.tab === 'weekly') {
+    setTimeout(() => {
+      initCalendar();
+    }, 500);
+  }
+  
+  // Añadir event listeners a los botones de pestañas
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      showTab(this.dataset.tab);
+    });
+  });
+});
 </script> 

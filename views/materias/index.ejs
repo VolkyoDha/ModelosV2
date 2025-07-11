@@ -222,27 +222,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const name = this.getAttribute('data-name');
             
             if (confirm(`¿Está seguro de que desea eliminar la materia "${name}"?`)) {
-                fetch(`/materias/${id}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showNotification('Materia eliminada exitosamente', 'success');
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 1000);
-                    } else {
-                        showNotification('Error al eliminar materia: ' + data.message, 'error');
-                    }
-                })
-                .catch(error => {
-                    showNotification('Error al eliminar materia', 'error');
-                    console.error('Error:', error);
-                });
+                // Crear un formulario dinámico para enviar la solicitud DELETE
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/materias/${id}?_method=DELETE`;
+                document.body.appendChild(form);
+                form.submit();
             }
         });
     });

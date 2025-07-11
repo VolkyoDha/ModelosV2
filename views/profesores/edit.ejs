@@ -9,8 +9,7 @@
   </div>
 
   <div class="edit-content">
-    <form action="/profesores/<%= profesor.id %>" method="POST" class="edit-form">
-      <input type="hidden" name="_method" value="PUT">
+    <form action="/profesores/<%= profesor.id %>?_method=PUT" method="POST" class="edit-form">
       
       <div class="form-grid">
         <div class="form-group">
@@ -35,6 +34,13 @@
           <label for="especialidad" class="form-label">Especialidad *</label>
           <input type="text" id="especialidad" name="especialidad" class="form-control" 
                  value="<%= profesor.especialidad %>" required>
+        </div>
+
+        <div class="form-group">
+          <label for="maxHorasSemana" class="form-label">Máximo Horas por Semana *</label>
+          <input type="number" id="maxHorasSemana" name="maxHorasSemana" class="form-control" 
+                 value="<%= profesor.maxHorasSemana || 20 %>" min="1" max="40" required>
+          <div class="form-help">Número máximo de horas que el profesor puede trabajar por semana</div>
         </div>
 
         <div class="form-group">
@@ -77,9 +83,8 @@
       <h3>Zona de Peligro</h3>
       <div class="danger-content">
         <p>Esta acción no se puede deshacer. Se eliminará permanentemente al profesor y todos sus horarios asignados.</p>
-        <form action="/profesores/<%= profesor.id %>" method="POST" class="delete-form" 
+        <form action="/profesores/<%= profesor.id %>?_method=DELETE" method="POST" class="delete-form" 
               onsubmit="return confirm('¿Estás seguro de que quieres eliminar este profesor? Esta acción no se puede deshacer.')">
-          <input type="hidden" name="_method" value="DELETE">
           <button type="submit" class="btn btn-danger">
             <i class="fas fa-trash"></i> Eliminar Profesor
           </button>

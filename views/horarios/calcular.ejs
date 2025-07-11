@@ -1,3 +1,47 @@
+<style>
+  .subject-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 8px;
+  }
+  
+  .subject-chip {
+    position: relative;
+  }
+  
+  .subject-checkbox {
+    position: absolute;
+    opacity: 0;
+  }
+  
+  .chip-label {
+    display: inline-block;
+    padding: 3px 8px;
+    background-color: #e9ecef;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .subject-checkbox:checked + .chip-label {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  .professor-subjects {
+    margin-top: 10px;
+    border-top: 1px solid #eee;
+    padding-top: 8px;
+  }
+  
+  .subject-selection strong {
+    font-size: 0.85rem;
+    color: #555;
+  }
+</style>
+
 <div class="calculate-schedules">
   <div class="detail-header">
     <h2>Calcular Horarios Automáticamente</h2>
@@ -12,41 +56,52 @@
     <form action="/horarios/calcular" method="POST" id="calculateForm">
       <div class="info-grid">
         <div class="info-card">
-          <h3>Materias a Incluir</h3>
-          <div class="subjects-grid">
-            <% materias.forEach(materia => { %>
-              <div class="subject-checkbox">
-                <input type="checkbox" id="materia_<%= materia.id %>" name="materias[]" value="<%= materia.id %>">
-                <label for="materia_<%= materia.id %>">
-                  <div class="subject-info">
-                    <strong><%= materia.nombre %></strong>
-                    <span class="subject-code badge badge-info"><%= materia.codigo %></span>
-                    <span class="subject-semester badge badge-primary">Semestre <%= materia.semestre %></span>
-                  </div>
-                  <div class="subject-hours">
-                    <span class="badge badge-primary">T: <%= materia.horasTeoria %>h</span>
-                    <span class="badge badge-success">P: <%= materia.horasPractica %>h</span>
-                    <span class="badge badge-warning">L: <%= materia.horasLaboratorio %>h</span>
-                  </div>
-                </label>
-              </div>
-            <% }) %>
+          <h3>Instrucciones</h3>
+          <div class="alert alert-info" style="margin-bottom: 20px;">
+            <i class="fas fa-info-circle"></i> Para calcular horarios:
+            <ol>
+              <li>Seleccione los profesores disponibles</li>
+              <li>Para cada profesor, asigne las materias que puede impartir</li>
+              <li>Configure las restricciones de horario</li>
+              <li>Haga clic en "Calcular Horarios"</li>
+            </ol>
+          </div>
+          <div class="alert alert-warning">
+            <i class="fas fa-clock"></i> <strong>Nota:</strong> El cálculo puede tardar varios minutos dependiendo de la cantidad de profesores y materias seleccionadas.
           </div>
         </div>
         <div class="info-card">
-          <h3>Profesores Disponibles</h3>
+          <h3>Profesores Disponibles <span class="badge badge-danger">Seleccione al menos uno</span></h3>
           <div class="professors-grid">
             <% profesores.forEach(profesor => { %>
-              <div class="professor-checkbox">
-                <input type="checkbox" id="profesor_<%= profesor.id %>" name="profesores[]" value="<%= profesor.id %>">
-                <label for="profesor_<%= profesor.id %>">
+              <div class="professor-checkbox" style="border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 5px;">
+                <input type="checkbox" id="profesor_<%= profesor.id %>" name="profesores[]" value="<%= profesor.id %>" style="transform: scale(1.5); margin-right: 10px;">
+                <label for="profesor_<%= profesor.id %>" style="display: inline-block; width: calc(100% - 30px); cursor: pointer;">
                   <div class="professor-info">
-                    <strong><%= profesor.nombre %> <%= profesor.apellido %></strong>
+                    <strong class="professor-name"><%= profesor.nombre %> <%= profesor.apellido %></strong>
                     <span class="badge badge-secondary"><%= profesor.especialidad %></span>
                   </div>
                   <div class="professor-availability">
                     <span class="current-hours"><%= profesor.horasAsignadas || 0 %>h asignadas</span>
                     <span class="max-hours">Máx: <%= profesor.maxHorasClase || profesor.maxHorasSemana || 20 %>h clase</span>
+                  </div>
+                  <div class="professor-subjects">
+                    <div class="subject-selection">
+                      <strong>Materias que puede impartir: <span class="badge badge-warning">Asigne al menos una</span></strong>
+                      <div class="subject-chips">
+                        <% materias.forEach(materia => { %>
+                          <div class="subject-chip">
+                            <input type="checkbox" id="prof_<%= profesor.id %>_mat_<%= materia.id %>" 
+                                  name="profesor_materias[<%= profesor.id %>][]" 
+                                  value="<%= materia.id %>" 
+                                  class="subject-checkbox">
+                            <label for="prof_<%= profesor.id %>_mat_<%= materia.id %>" class="chip-label">
+                              <%= materia.nombre %>
+                            </label>
+                          </div>
+                        <% }) %>
+                      </div>
+                    </div>
                   </div>
                 </label>
               </div>
@@ -96,31 +151,259 @@
       </div>
     </form>
 
+    <!-- Script para validar selecciones de profesores y materias -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Obtener todos los checkboxes de profesores
+        const profesorCheckboxes = document.querySelectorAll('input[name="profesores[]"]');
+        
+        // Función para actualizar el estado de las materias según la selección de profesores
+        function updateMateriaCheckboxes() {
+          profesorCheckboxes.forEach(profesorCheckbox => {
+            const profesorId = profesorCheckbox.value;
+            const materiaCheckboxes = document.querySelectorAll(`input[name="profesor_materias[${profesorId}][]"]`);
+            
+            materiaCheckboxes.forEach(materiaCheckbox => {
+              // Si el profesor no está seleccionado, deshabilitar y desmarcar sus materias
+              if (!profesorCheckbox.checked) {
+                materiaCheckbox.disabled = true;
+                materiaCheckbox.checked = false;
+                materiaCheckbox.parentElement.classList.add('disabled');
+              } else {
+                materiaCheckbox.disabled = false;
+                materiaCheckbox.parentElement.classList.remove('disabled');
+              }
+            });
+          });
+        }
+        
+        // Agregar evento change a los checkboxes de profesores
+        profesorCheckboxes.forEach(checkbox => {
+          checkbox.addEventListener('change', updateMateriaCheckboxes);
+        });
+        
+        // Ejecutar la validación inicial
+        updateMateriaCheckboxes();
+        
+        // Validar el formulario antes de enviar
+        document.getElementById('calculateForm').addEventListener('submit', function(e) {
+          // Ocultar cualquier mensaje de error previo
+          const toastContainer = document.getElementById('toast-container');
+          if (toastContainer) {
+            toastContainer.innerHTML = '';
+          }
+          
+          // Verificar que al menos un profesor esté seleccionado
+          const profesoresSeleccionados = document.querySelectorAll('input[name="profesores[]"]:checked');
+          if (profesoresSeleccionados.length === 0) {
+            e.preventDefault();
+            showErrorMessage('Debe seleccionar al menos un profesor.');
+            return false;
+          }
+          
+          // Ya no necesitamos verificar materias generales, solo las asignadas a profesores
+          
+          // Verificar que cada profesor seleccionado tenga al menos una materia asignada
+          let profesoresSinMaterias = [];
+          profesoresSeleccionados.forEach(profesor => {
+            const profesorId = profesor.value;
+            const profesorNombre = profesor.parentElement.querySelector('.professor-name').textContent.trim();
+            const materiasProfSeleccionadas = document.querySelectorAll(`input[name="profesor_materias[${profesorId}][]"]:checked`);
+            if (materiasProfSeleccionadas.length === 0) {
+              profesoresSinMaterias.push(profesorNombre);
+            }
+          });
+          
+          if (profesoresSinMaterias.length > 0) {
+            e.preventDefault();
+            showErrorMessage(`Los siguientes profesores no tienen materias asignadas: ${profesoresSinMaterias.join(', ')}. Cada profesor debe tener al menos una materia.`);
+            return false;
+          }
+          
+          // Mostrar overlay de carga
+          document.querySelector('.loading-overlay').style.display = 'flex';
+          showInfoMessage('Calculando horario, por favor espere...');
+          localStorage.setItem('calculationInProgress', 'true');
+          
+          return true;
+        });
+        
+        // Funciones para mostrar mensajes de error y notificaciones
+        function showErrorMessage(message) {
+          const container = document.createElement('div');
+          container.className = 'alert alert-danger';
+          container.style.position = 'fixed';
+          container.style.top = '20px';
+          container.style.left = '50%';
+          container.style.transform = 'translateX(-50%)';
+          container.style.zIndex = '9999';
+          container.style.minWidth = '300px';
+          container.style.maxWidth = '80%';
+          container.style.padding = '15px';
+          container.style.borderLeft = '5px solid #721c24';
+          container.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
+          
+          const icon = document.createElement('i');
+          icon.className = 'fas fa-exclamation-triangle';
+          icon.style.marginRight = '10px';
+          
+          container.innerHTML = `<strong>Error:</strong> ${message}`;
+          container.prepend(icon);
+          
+          document.body.appendChild(container);
+          
+          // Ocultar el overlay de carga si está visible
+          const loadingOverlay = document.querySelector('.loading-overlay');
+          if (loadingOverlay) {
+            loadingOverlay.style.display = 'none';
+          }
+          
+          // Auto-eliminar después de 5 segundos
+          setTimeout(() => {
+            if (container && container.parentNode) {
+              container.parentNode.removeChild(container);
+            }
+          }, 5000);
+        }
+        
+        function showInfoMessage(message) {
+          const container = document.createElement('div');
+          container.className = 'alert alert-info';
+          container.style.position = 'fixed';
+          container.style.top = '20px';
+          container.style.left = '50%';
+          container.style.transform = 'translateX(-50%)';
+          container.style.zIndex = '9999';
+          container.style.minWidth = '300px';
+          container.style.maxWidth = '80%';
+          container.style.padding = '15px';
+          container.style.borderLeft = '5px solid #0c5460';
+          container.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
+          
+          const icon = document.createElement('i');
+          icon.className = 'fas fa-info-circle';
+          icon.style.marginRight = '10px';
+          
+          container.innerHTML = `<strong>Info:</strong> ${message}`;
+          container.prepend(icon);
+          
+          document.body.appendChild(container);
+          
+          // Auto-eliminar después de 5 segundos
+          setTimeout(() => {
+            if (container && container.parentNode) {
+              container.parentNode.removeChild(container);
+            }
+          }, 5000);
+        }
+      });
+    </script>
+    
+    <!-- Agregar estilos para materias deshabilitadas -->
+    <style>
+      .subject-chip.disabled .chip-label {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background-color: #f0f0f0;
+        color: #999;
+      }
+      
+      .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+      }
+      
+      .loading-content {
+        background-color: white;
+        padding: 30px;
+        border-radius: 8px;
+        text-align: center;
+        max-width: 400px;
+      }
+      
+      .spinner {
+        border: 6px solid #f3f3f3;
+        border-top: 6px solid #3498db;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 20px;
+      }
+      
+      .progress-container {
+        width: 100%;
+        background-color: #f1f1f1;
+        border-radius: 4px;
+        margin: 20px 0;
+      }
+      
+      .progress-bar {
+        width: 0%;
+        height: 10px;
+        background-color: #4CAF50;
+        border-radius: 4px;
+        transition: width 0.3s;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+
+    <% if (typeof error !== 'undefined' && error) { %>
+      <div class="alert alert-danger" style="font-size: 1.1rem; padding: 15px; margin-bottom: 20px; border-left: 5px solid #721c24;">
+        <i class="fas fa-exclamation-triangle" style="margin-right: 10px;"></i>
+        <strong>Error:</strong> <%- error %>
+      </div>
+    <% } %>
+
     <% if (typeof resultado !== 'undefined' && resultado) { %>
-    <div class="calculation-results mt-4">
-      <h3>Resultados del Cálculo</h3>
-      <div class="results-summary">
-        <div class="summary-card success">
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Resultados del Cálculo</h5>
+        </div>
+        <div class="card-body">
+            <% if (typeof mensajeResultado !== 'undefined' && mensajeResultado) { %>
+                <div class="alert <%= resultado.exito ? 'alert-success' : (resultado.asignaciones && Object.keys(resultado.asignaciones).length > 0 ? 'alert-warning' : 'alert-danger') %>">
+                    <i class="fas <%= resultado.exito ? 'fa-check-circle' : (resultado.asignaciones && Object.keys(resultado.asignaciones).length > 0 ? 'fa-exclamation-triangle' : 'fa-times-circle') %>"></i> 
+                    <%= mensajeResultado %>
+                </div>
+            <% } else { %>
+                <% if (resultado.exito) { %>
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle"></i> Se ha generado un horario completo satisfaciendo todas las restricciones.
+                    </div>
+                <% } else if (resultado.asignaciones && Object.keys(resultado.asignaciones).length > 0) { %>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i> Se ha generado un horario parcial. No fue posible asignar todas las materias respetando las restricciones.
+                    </div>
+                <% } else { %>
+                    <div class="alert alert-danger">
+                        <i class="fas fa-times-circle"></i> No fue posible generar un horario. Intente reducir las restricciones o aumentar el número de profesores disponibles.
+                    </div>
+                <% } %>
+            <% } %>
           <div class="summary-icon">
-            <i class="fas fa-check-circle"></i>
+            <i class="fas fa-clock"></i>
           </div>
           <div class="summary-content">
-            <h4><%= resultado.resumen.materiasAsignadas %></h4>
-            <p>Materias Asignadas</p>
+            <h4><%= Math.round(resultado.estadisticas.tiempoMs / 1000) %>s</h4>
+            <p>Tiempo de cálculo</p>
           </div>
         </div>
         <div class="summary-card warning">
           <div class="summary-icon">
-            <i class="fas fa-exclamation-triangle"></i>
-          </div>
-          <div class="summary-content">
-            <h4><%= resultado.resumen.materiasSinAsignar %></h4>
-            <p>Materias Sin Asignar</p>
-          </div>
-        </div>
-        <div class="summary-card info">
-          <div class="summary-icon">
-            <i class="fas fa-clock"></i>
+            <i class="fas fa-chart-line"></i>
           </div>
           <div class="summary-content">
             <h4><%= resultado.resumen.totalHoras %></h4>
@@ -128,6 +411,145 @@
           </div>
         </div>
       </div>
+      
+      <!-- Bibliotecas de FullCalendar -->
+      <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css" rel="stylesheet">
+      <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/locales/es.js"></script>
+      
+      <!-- Vista de Calendario -->
+      <div id="calendar-container" class="calendar-container mt-4" style="display: block !important; visibility: visible !important; opacity: 1 !important; min-height: 650px;">
+        <h4>Vista de Horario Semanal</h4>
+        
+        <!-- Contenedor del calendario con estilos inline para garantizar visibilidad -->
+        <div id="calendar" style="display: block !important; visibility: visible !important; opacity: 1 !important; height: 600px !important; min-height: 600px !important;"></div>
+        
+        <!-- Mostrar estadísticas de eventos generados -->
+        <div class="alert alert-info mt-3 mb-3">
+          <i class="fas fa-info-circle"></i> 
+          <strong>Eventos generados:</strong> <%= typeof horarioEvents !== 'undefined' ? horarioEvents.length : 0 %> asignaciones
+          <% if (typeof horarioEvents !== 'undefined' && horarioEvents.length > 0) { %>
+            <button class="btn btn-sm btn-outline-primary ml-3" onclick="toggleEventsList()">Ver detalles</button>
+          <% } %>
+        </div>
+        
+        <!-- Lista de eventos (oculta por defecto) -->
+        <div id="events-list" style="display: none;" class="mb-3">
+          <div class="card">
+            <div class="card-header bg-light">
+              <h6 class="mb-0">Detalle de asignaciones</h6>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-sm table-hover">
+                  <thead>
+                    <tr>
+                      <th>Profesor</th>
+                      <th>Materia</th>
+                      <th>Día</th>
+                      <th>Horario</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% if (typeof horarioEvents !== 'undefined') { %>
+                      <% horarioEvents.forEach(function(evento) { %>
+                        <tr>
+                          <td><%= evento.profesorNombre %></td>
+                          <td><%= evento.materiaNombre %></td>
+                          <td>
+                            <% const dias = ['', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']; %>
+                            <%= dias[evento.dia] %>
+                          </td>
+                          <td><%= evento.horaInicio %> - <%= evento.horaFin %></td>
+                        </tr>
+                      <% }); %>
+                    <% } %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Script para interactuar con la lista de eventos -->
+        <script>
+          // Función para mostrar/ocultar la lista de eventos
+          function toggleEventsList() {
+            const eventsList = document.getElementById('events-list');
+            if (eventsList) {
+              eventsList.style.display = eventsList.style.display === 'none' ? 'block' : 'none';
+            }
+          }
+          
+          // Los datos del calendario se cargarán mediante AJAX en horarios_fixed.js
+          console.log('La página de cálculo está lista');
+        </script>
+        <script src="/js/horarios_fixed.js?v=<%= Date.now() %>" onerror="console.error('Error al cargar horarios_fixed.js');"></script>
+        <script>
+          // Imprimir en la consola para depuración
+          console.log('Eventos de horario cargados:', window.horarioEvents || []);
+          
+          // Función para forzar la visibilidad del calendario
+          function forceCalendarVisibility() {
+            const calendarContainer = document.querySelector('.calendar-container');
+            const calendarEl = document.getElementById('calendar');
+            
+            if (calendarContainer) {
+              calendarContainer.style.display = 'block';
+              calendarContainer.style.visibility = 'visible';
+              calendarContainer.style.opacity = '1';
+              calendarContainer.style.zIndex = '1000';
+            }
+            
+            if (calendarEl) {
+              calendarEl.style.display = 'block';
+              calendarEl.style.visibility = 'visible';
+              calendarEl.style.opacity = '1';
+              calendarEl.style.height = '600px';
+              calendarEl.style.minHeight = '600px';
+            }
+            
+            // También hacer visibles los elementos de FullCalendar
+            document.querySelectorAll('.fc, .fc-view-harness, .fc-view').forEach(el => {
+              if (el) {
+                el.style.display = 'block';
+                el.style.visibility = 'visible';
+                el.style.opacity = '1';
+              }
+            });
+          }
+          
+          // Asegurarse de que el calendario se inicialice correctamente
+          document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar el calendario cuando el DOM esté listo
+            setTimeout(function() {
+              if (typeof initCalendar === 'function') {
+                console.log('Inicializando calendario desde el evento DOMContentLoaded');
+                initCalendar();
+                forceCalendarVisibility();
+              }
+            }, 500);
+          });
+          
+          // Inicializar también cuando la ventana esté completamente cargada
+          window.addEventListener('load', function() {
+            // Inicializar el calendario cuando la ventana esté completamente cargada
+            setTimeout(function() {
+              if (typeof initCalendar === 'function') {
+                console.log('Inicializando calendario desde el evento load');
+                initCalendar();
+                forceCalendarVisibility();
+              }
+            }, 500);
+            
+            // Programar múltiples intentos de forzar visibilidad
+            [1000, 2000, 3000, 5000].forEach(delay => {
+              setTimeout(forceCalendarVisibility, delay);
+            });
+          });
+        </script>
+      </div>
+      
       <% if (resultado.materias && resultado.materias.length > 0) { %>
       <div class="assigned-subjects">
         <h4>Materias Asignadas Exitosamente</h4>

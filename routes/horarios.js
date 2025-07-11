@@ -21,5 +21,6 @@ router.get('/exportar', horariosController.exportar);
 // APIs
 router.get('/api/horario', horariosController.getHorarioApi);
 router.get('/api/conflictos', horariosController.getConflictosApi);
+router.get('/api/horarios/datos', horariosController.getDatosHorario);
 
-module.exports = router; 
+module.exports = router;

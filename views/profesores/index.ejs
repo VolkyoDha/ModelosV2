@@ -159,27 +159,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const name = this.getAttribute('data-name');
             
             if (confirm(`¿Está seguro de que desea eliminar al profesor "${name}"?`)) {
-                fetch(`/profesores/${id}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showNotification('Profesor eliminado exitosamente', 'success');
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 1000);
-                    } else {
-                        showNotification('Error al eliminar profesor: ' + data.message, 'error');
-                    }
-                })
-                .catch(error => {
-                    showNotification('Error al eliminar profesor', 'error');
-                    console.error('Error:', error);
-                });
+                // Crear un formulario dinámico para enviar la solicitud DELETE
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/profesores/${id}?_method=DELETE`;
+                document.body.appendChild(form);
+                form.submit();
             }
         });
     });

@@ -1,0 +1,84 @@
+/**
+ * Archivo generado dinámicamente con los recursos para el calendario
+ * Última actualización: <%= new Date().toLocaleString() %>
+ */
+
+const calendarResources = [
+<% if (profesores && profesores.length > 0) { %>
+  <% profesores.forEach((profesor, index) => { %>
+    {
+      id: '<%= profesor.id %>',
+      title: '<%= profesor.nombre %> <%= profesor.apellido || '' %>',
+      eventColor: getColorForProfesor('<%= profesor.id %>'),
+      children: [
+        <% if (profesor.materias && profesor.materias.length > 0) { %>
+          <% profesor.materias.forEach((materia, mIndex) => { %>
+            {
+              id: 'prof-<%= profesor.id %>-mat-<%= materia.id %>',
+              title: '<%= materia.nombre.replace(/'/g, "\\'") %>',
+              eventColor: getColorForMateria('<%= materia.id %>')
+            }<%= mIndex < profesor.materias.length - 1 ? ',' : '' %>
+          <% }); %>
+        <% } %>
+      ]
+    }<%= index < profesores.length - 1 ? ',' : '' %>
+  <% }); %>
+<% } else { %>
+  // No hay profesores disponibles
+  {
+    id: 'no-resources',
+    title: 'No hay recursos disponibles',
+    eventColor: '#cccccc'
+  }
+<% } %>
+];
+
+// Función para obtener un color basado en el ID del profesor
+function getColorForProfesor(profesorId) {
+  // Colores predefinidos para profesores
+  const colores = [
+    '#4285F4', // Azul Google
+    '#EA4335', // Rojo Google
+    '#FBBC05', // Amarillo Google
+    '#34A853', // Verde Google
+    '#3498db', // Azul claro
+    '#e74c3c', // Rojo
+    '#2ecc71', // Verde
+    '#f39c12', // Naranja
+    '#9b59b6', // Morado
+    '#1abc9c'  // Turquesa
+  ];
+  
+  // Usar el hash del ID para seleccionar un color
+  const hash = profesorId.split('').reduce((a, b) => {
+    a = ((a << 5) - a) + b.charCodeAt(0);
+    return a & a;
+  }, 0);
+  
+  return colores[Math.abs(hash) % colores.length];
+}
+
+// Función para obtener un color basado en el ID de la materia
+function getColorForMateria(materiaId) {
+  // Colores predefinidos para materias
+  const colores = [
+    '#4285F4', // Azul Google
+    '#EA4335', // Rojo Google
+    '#FBBC05', // Amarillo Google
+    '#34A853', // Verde Google
+    '#3498db', // Azul claro
+    '#e74c3c', // Rojo
+    '#2ecc71', // Verde
+    '#f39c12', // Naranja
+    '#9b59b6', // Morado
+    '#1abc9c'  // Turquesa
+  ];
+  
+  // Usar el hash del ID para seleccionar un color
+  const hash = materiaId.split('').reduce((a, b) => {
+    a = ((a << 5) - a) + b.charCodeAt(0);
+    return a & a;
+  }, 0);
+  
+  return colores[Math.abs(hash) % colores.length];
+}

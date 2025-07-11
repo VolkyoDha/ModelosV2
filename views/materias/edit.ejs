@@ -9,8 +9,7 @@
   </div>
 
   <div class="edit-content">
-    <form action="/materias/<%= materia.id %>" method="POST" class="edit-form">
-      <input type="hidden" name="_method" value="PUT">
+    <form action="/materias/<%= materia.id %>?_method=PUT" method="POST" class="edit-form">
       <div class="form-grid">
         <div class="form-group">
           <label for="codigo" class="form-label">Código *</label>
@@ -70,8 +69,7 @@
       <h3>Zona de Peligro</h3>
       <div class="danger-content">
         <p>Esta acción no se puede deshacer. Se eliminará permanentemente la materia.</p>
-        <form action="/materias/<%= materia.id %>" method="POST" class="delete-form" onsubmit="return confirm('¿Está seguro de que desea eliminar esta materia?');">
-          <input type="hidden" name="_method" value="DELETE">
+        <form action="/materias/<%= materia.id %>?_method=DELETE" method="POST" class="delete-form" onsubmit="return confirm('¿Está seguro de que desea eliminar esta materia?');">
           <button type="submit" class="btn btn-danger">
             <i class="fas fa-trash"></i> Eliminar Materia
           </button>

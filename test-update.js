@@ -17,7 +17,7 @@ async function testUpdate() {
     const primerProfesor = profesores[0];
     console.log('Profesor a actualizar:', primerProfesor);
     
-    // Datos de prueba
+    // Datos de pruebal
     const datosActualizacion = {
       nombre: 'Dr. Juan',
       apellido: 'Pérez',

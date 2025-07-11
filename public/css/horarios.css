@@ -1,0 +1,651 @@
+/* Estilos para la página de horarios */
+
+/* Layout principal */
+.schedules-main {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Loading overlay */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.loading-content {
+  background-color: white;
+  border-radius: 10px;
+  padding: 30px;
+  text-align: center;
+  max-width: 500px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.spinner {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 20px;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #4CAF50;
+  border-radius: 50%;
+  animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.progress-container {
+  width: 100%;
+  background-color: #f3f3f3;
+  border-radius: 5px;
+  margin: 20px 0;
+  height: 10px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: #4CAF50;
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+.calculation-status {
+  color: #666;
+  font-style: italic;
+}
+
+/* Calendar styles - with !important to ensure they are not overridden */
+.calendar-container {
+  margin-top: 30px !important;
+  margin-bottom: 30px !important;
+  padding: 5px !important;
+  background-color: white !important;
+  border-radius: 10px !important;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  min-height: 650px !important;
+  position: relative !important;
+  z-index: 10 !important; /* Ensure it's above other elements */
+}
+
+#calendar {
+  margin-top: 20px !important;
+  min-height: 600px !important;
+  height: 600px !important;
+  background-color: white !important;
+  padding: 20px !important;
+  border-radius: 10px !important;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: relative !important;
+  z-index: 11 !important; /* Ensure it's above other elements */
+}
+
+/* Ensure FullCalendar elements are visible */
+.fc, .fc-view-harness, .fc-view, .fc-scrollgrid, .fc-scroller {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  height: auto !important;
+  min-height: 100px !important;
+}
+
+/* Make sure events are visible */
+.fc-event {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.fc-event {
+  cursor: pointer;
+  border: none !important;
+  border-radius: 4px !important;
+}
+
+/* Tooltip para eventos del calendario */
+.event-tooltip {
+  position: absolute;
+  z-index: 10000;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  max-width: 250px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+  display: none;
+}
+
+/* Estado vacío para cuando no hay horarios */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 3rem;
+  margin: 2rem auto;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  max-width: 800px;
+}
+
+.empty-state-icon {
+  font-size: 4rem;
+  color: #6c757d;
+  margin-bottom: 1.5rem;
+}
+
+.empty-state h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: #343a40;
+}
+
+.empty-state p {
+  font-size: 1rem;
+  color: #6c757d;
+  margin-bottom: 1.5rem;
+  max-width: 500px;
+}
+
+.event-tooltip:after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  margin-left: -5px;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid rgba(0, 0, 0, 0.8);
+}
+
+.fc-event-title {
+  font-weight: 500;
+  white-space: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 2px 4px;
+}
+
+.fc-day-today {
+  background-color: rgba(76, 175, 80, 0.1) !important;
+}
+
+.fc-toolbar-title {
+  font-size: 1.2em !important;
+  font-weight: 600;
+  color: #333;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.page-header h2 {
+  margin: 0;
+  color: #333;
+}
+
+/* Tarjetas de resumen */
+.schedules-overview {
+  margin-bottom: 20px;
+}
+
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.overview-card {
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  transition: transform 0.3s ease;
+}
+
+.overview-card:hover {
+  transform: translateY(-5px);
+}
+
+.overview-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: #f0f9ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: #4CAF50;
+}
+
+.overview-content h3 {
+  margin: 0 0 5px 0;
+  font-size: 24px;
+  color: #333;
+}
+
+.overview-content p {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+}
+
+/* Pestañas de contenido */
+.schedules-content {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+.content-tabs {
+  display: flex;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.tab-btn {
+  padding: 15px 20px;
+  border: none;
+  background: none;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tab-btn:hover {
+  background: #e9ecef;
+  color: #333;
+}
+
+.tab-btn.active {
+  background: white;
+  color: #4CAF50;
+  border-bottom: 2px solid #4CAF50;
+}
+
+.tab-btn i {
+  font-size: 16px;
+}
+
+.tab-content {
+  display: none;
+  padding: 20px;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* Horarios por profesor */
+.professors-schedules {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 20px;
+}
+
+.professor-schedule-card {
+  background: #f8f9fa;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  transition: transform 0.3s ease;
+}
+
+.professor-schedule-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.professor-header {
+  background: #4CAF50;
+  color: white;
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.professor-header h4 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.professor-stats {
+  display: flex;
+  gap: 10px;
+}
+
+.hours-badge {
+  background: rgba(255,255,255,0.2);
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+.availability-badge {
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+.availability-badge.available {
+  background: #4CAF50;
+  color: white;
+}
+
+.availability-badge.full {
+  background: #f44336;
+  color: white;
+}
+
+.schedule-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 10px;
+  padding: 15px;
+}
+
+.day-column h5 {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  color: #333;
+  text-align: center;
+}
+
+.schedule-slot {
+  background: white;
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.slot-time {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.slot-subject {
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+.slot-type {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.empty-schedule {
+  padding: 30px;
+  text-align: center;
+  color: #666;
+}
+
+.empty-schedule i {
+  font-size: 32px;
+  margin-bottom: 10px;
+  color: #ccc;
+}
+
+.empty-schedule p {
+  margin: 0 0 15px 0;
+}
+
+.empty-slot {
+  padding: 10px;
+  text-align: center;
+  color: #999;
+  font-size: 12px;
+  font-style: italic;
+}
+
+/* Horarios por materia */
+.subjects-schedules {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.subject-schedule-card {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  padding: 15px;
+  transition: transform 0.3s ease;
+}
+
+.subject-schedule-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.subject-header {
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.subject-header h4 {
+  margin: 0 0 10px 0;
+  color: #333;
+}
+
+.subject-info {
+  display: flex;
+  gap: 10px;
+}
+
+.code-badge,
+.semester-badge {
+  background: #f0f9ff;
+  color: #0c5460;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+.subject-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.stat-item label {
+  color: #666;
+}
+
+.status-badge {
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+.status-badge.completed {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-badge.pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+/* Vista semanal */
+.weekly-view {
+  overflow-x: auto;
+}
+
+.weekly-grid {
+  display: flex;
+  min-width: 800px;
+}
+
+.time-column,
+.day-column {
+  flex: 1;
+  min-width: 100px;
+}
+
+.time-column {
+  flex: 0 0 80px;
+}
+
+.time-header,
+.day-header {
+  padding: 10px;
+  text-align: center;
+  font-weight: 600;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.time-slot {
+  height: 60px;
+  padding: 5px;
+  text-align: center;
+  font-size: 12px;
+  color: #666;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.day-slot {
+  height: 60px;
+  border-bottom: 1px solid #f0f0f0;
+  border-left: 1px solid #f0f0f0;
+  padding: 5px;
+  position: relative;
+}
+
+.day-slot.occupied {
+  background: #f9f9f9;
+}
+
+.schedule-item {
+  background: #e3f2fd;
+  border-radius: 4px;
+  padding: 5px;
+  font-size: 11px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.item-subject {
+  font-weight: 500;
+  color: #333;
+}
+
+.item-professor {
+  font-size: 10px;
+  color: #666;
+}
+
+.item-type {
+  align-self: flex-end;
+  font-size: 9px;
+  padding: 1px 4px;
+}
+
+/* Badges para tipos de clase */
+.badge-primary {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.badge-success {
+  background: #e8f5e9;
+  color: #388e3c;
+}
+
+.badge-warning {
+  background: #fff8e1;
+  color: #f57c00;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .overview-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .professors-schedules,
+  .subjects-schedules {
+    grid-template-columns: 1fr;
+  }
+  
+  .professor-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .professor-stats {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .content-tabs {
+    flex-direction: column;
+  }
+  
+  .tab-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
