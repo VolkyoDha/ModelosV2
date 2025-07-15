@@ -24,7 +24,8 @@ class MateriasController {
       const materias = await Materia.getAll();
       res.render('materias/create', {
         title: 'Agregar Materia',
-        materias: materias // Para seleccionar prerequisitos
+        materias: materias, // Para seleccionar prerequisitos
+        data: {}
       });
     } catch (error) {
       res.render('error', {

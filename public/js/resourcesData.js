@@ -1,6 +1,6 @@
 /**
  * Archivo generado dinámicamente con los recursos para el calendario
- * Última actualización: 11/7/2025, 3:43:06 p. m.
+ * Última actualización: 14/7/2025, 8:11:46 p. m.
  */
 
 const calendarResources = [

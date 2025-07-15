@@ -99,9 +99,9 @@
                                 </div>
                             </td>
                             <td>
-                                <% if (materia.prerequisitos && materia.prerequisitos.length > 0) { %>
+                                <% if (Array.isArray(materia.prerequisitos) && materia.prerequisitos.length > 0) { %>
                                     <div class="prerequisitos">
-                                        <% materia.prerequisitos.forEach(prereqId => { %>
+                                        <% (Array.isArray(materia.prerequisitos) ? materia.prerequisitos : []).forEach(prereqId => { %>
                                             <% const prereq = materias.find(m => m.id === prereqId); %>
                                             <% if (prereq) { %>
                                                 <span class="prereq-badge" title="<%= prereq.nombre %>">
