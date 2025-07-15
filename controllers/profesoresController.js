@@ -35,9 +35,8 @@ class ProfesoresController {
         apellido: req.body.apellido,
         email: req.body.email,
         especialidad: req.body.especialidad,
-        maxHorasSemana: req.body.maxHorasSemana
+        tipo: req.body.tipo               // ← capturamos el tipo de contrato al crear
       };
-
       await Profesor.create(profesorData);
       req.flash('success', 'Profesor agregado exitosamente');
       res.redirect('/profesores');
@@ -63,8 +62,6 @@ class ProfesoresController {
 
       const cargaHoraria = await Profesor.getCargaHoraria(req.params.id);
       const materias = await Materia.getAll();
-      
-      // Detectar conflictos de horario
       const conflictos = await Profesor.checkConflictos(req.params.id, {});
 
       res.render('profesores/show', {
@@ -95,7 +92,8 @@ class ProfesoresController {
 
       res.render('profesores/edit', {
         title: 'Editar Profesor',
-        profesor: profesor
+        profesor: profesor,
+        error: null
       });
     } catch (error) {
       res.render('error', {
@@ -110,46 +108,40 @@ class ProfesoresController {
     try {
       console.log('=== INICIO ACTUALIZACIÓN PROFESOR ===');
       console.log('ID del profesor:', req.params.id);
-      console.log('Tipo de ID:', typeof req.params.id);
       console.log('Datos recibidos:', req.body);
-      
+
       // Validar que el profesor existe antes de actualizar
       const profesorExistente = await Profesor.getById(req.params.id);
       if (!profesorExistente) {
-        console.log('Profesor no encontrado en la base de datos');
         req.flash('error', 'Profesor no encontrado');
         return res.redirect('/profesores');
       }
-      
-      console.log('Profesor encontrado:', profesorExistente);
-      
+
+      // Preparamos sólo el campo 'tipo', delegando el cálculo de horas al modelo
       const profesorData = {
         nombre: req.body.nombre,
         apellido: req.body.apellido,
         email: req.body.email,
         especialidad: req.body.especialidad,
-        maxHorasSemana: req.body.maxHorasSemana
+        tipo: req.body.tipo               // ← nuevo: tipo de contrato
       };
 
       console.log('Datos a actualizar:', profesorData);
-      
       const profesorActualizado = await Profesor.update(req.params.id, profesorData);
       console.log('Profesor actualizado exitosamente:', profesorActualizado);
-      
+
       req.flash('success', 'Profesor actualizado exitosamente');
       console.log('=== FIN ACTUALIZACIÓN PROFESOR ===');
       res.redirect(`/profesores/${req.params.id}`);
     } catch (error) {
-      console.error('=== ERROR EN ACTUALIZACIÓN ===');
-      console.error('Error completo:', error);
-      console.error('Stack trace:', error.stack);
-      
-      // Intentar obtener el profesor para mostrar el formulario con error
+      console.error('=== ERROR EN ACTUALIZACIÓN ===', error);
+
+      // Volver a mostrar formulario con error y los datos ingresados
       try {
         const profesor = await Profesor.getById(req.params.id);
         res.render('profesores/edit', {
           title: 'Editar Profesor',
-          profesor: profesor,
+          profesor: { ...profesor, ...req.body },
           error: error.message
         });
       } catch (getError) {
@@ -181,15 +173,9 @@ class ProfesoresController {
         tipo: req.body.tipo
       };
 
-      // Verificar conflictos antes de agregar
       const conflictos = await Profesor.checkConflictos(req.params.id, horarioData);
-      
       if (conflictos.length > 0) {
-        return res.json({
-          success: false,
-          conflictos: conflictos,
-          message: 'Existen conflictos de horario'
-        });
+        return res.json({ success: false, conflictos, message: 'Existen conflictos de horario' });
       }
 
       await Profesor.addHorario(req.params.id, horarioData);
@@ -227,9 +213,8 @@ class ProfesoresController {
         horaInicio: req.body.horaInicio,
         horaFin: req.body.horaFin
       };
-
       const conflictos = await Profesor.checkConflictos(req.params.id, horarioData);
-      res.json({ conflictos: conflictos });
+      res.json({ conflictos });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
@@ -246,4 +231,4 @@ class ProfesoresController {
   }
 }
 
-module.exports = new ProfesoresController(); 
+module.exports = new ProfesoresController();

@@ -89,27 +89,15 @@ class Profesor {
   async update(id, profesorData) {
     console.log('=== MODELO: INICIO ACTUALIZACIÓN ===');
     console.log('Modelo: ID recibido:', id);
-    console.log('Modelo: Tipo de ID:', typeof id);
     console.log('Modelo: Datos a actualizar:', profesorData);
 
     const profesores = await this.getAll();
-    console.log('Modelo: Total de profesores:', profesores.length);
-    console.log('Modelo: IDs disponibles:', profesores.map(p => ({ id: p.id, tipo: typeof p.id })));
-
-    // Convertir ID a string para comparación consistente
     const idString = id.toString();
-    console.log('Modelo: ID convertido a string:', idString);
-
     const index = profesores.findIndex(p => p.id === idString);
-    console.log('Modelo: Índice encontrado:', index);
 
     if (index === -1) {
-      console.log('Modelo: Profesor no encontrado');
       throw new Error(`Profesor con ID ${idString} no encontrado`);
     }
-
-    console.log('Modelo: Profesor encontrado:', profesores[index]);
-    console.log('Modelo: Datos a actualizar:', profesorData);
 
     // Validar y obtener el tipo de profesor
     const tipo = profesorData.tipo || profesores[index].tipo || 'medio_tiempo';
@@ -119,51 +107,40 @@ class Profesor {
 
     const horasConfig = this.getHorasPorTipo(tipo);
 
-    // Convertir maxHorasSemana a número si existe
-    const maxHorasSemana = profesorData.maxHorasSemana ? parseInt(profesorData.maxHorasSemana) : null;
-
-    // Preservar el ID original y otros campos importantes
+    // Construir el objeto actualizado sin usar maxHorasSemana
     const profesorActualizado = {
       ...profesores[index],
-      id: profesores[index].id, // Mantener el ID original
       nombre: profesorData.nombre,
       apellido: profesorData.apellido,
       email: profesorData.email,
       especialidad: profesorData.especialidad,
       tipo: tipo,
-      maxHorasSemana: maxHorasSemana, // Usar el valor del formulario
       maxHorasTotales: horasConfig.horasTotales,
       maxHorasClase: horasConfig.horasClase,
-      horarios: profesores[index].horarios || [], // Preservar horarios existentes
-      createdAt: profesores[index].createdAt, // Preservar fecha de creación
       updatedAt: new Date().toISOString()
     };
 
-    console.log('Modelo: Profesor actualizado:', profesorActualizado);
-
     profesores[index] = profesorActualizado;
     await this.saveAll(profesores);
-    console.log('Modelo: Datos guardados exitosamente');
+
+    console.log('Modelo: Profesor actualizado:', profesorActualizado);
     console.log('=== MODELO: FIN ACTUALIZACIÓN ===');
     return profesorActualizado;
   }
 
   async delete(id) {
     const profesores = await this.getAll();
-    const filteredProfesores = profesores.filter(p => p.id !== id.toString());
-
-    if (filteredProfesores.length === profesores.length) {
+    const filtered = profesores.filter(p => p.id !== id.toString());
+    if (filtered.length === profesores.length) {
       throw new Error('Profesor no encontrado');
     }
-
-    await this.saveAll(filteredProfesores);
+    await this.saveAll(filtered);
     return true;
   }
 
   async addHorario(profesorId, horarioData) {
     const profesores = await this.getAll();
     const profesor = profesores.find(p => p.id === profesorId.toString());
-
     if (!profesor) {
       throw new Error('Profesor no encontrado');
     }
@@ -174,7 +151,7 @@ class Profesor {
       dia: horarioData.dia,
       horaInicio: horarioData.horaInicio,
       horaFin: horarioData.horaFin,
-      tipo: horarioData.tipo || 'teoria', // teoria, practica, laboratorio
+      tipo: horarioData.tipo || 'teoria',
       createdAt: new Date().toISOString()
     };
 
@@ -186,18 +163,16 @@ class Profesor {
   async removeHorario(profesorId, horarioId) {
     const profesores = await this.getAll();
     const profesor = profesores.find(p => p.id === profesorId.toString());
-
     if (!profesor) {
       throw new Error('Profesor no encontrado');
     }
-
     profesor.horarios = profesor.horarios.filter(h => h.id !== horarioId);
     await this.saveAll(profesores);
     return true;
   }
 
   async getCargaHoraria(profesorId) {
-    const profesor = await this.getById(profesorId.toString());
+    const profesor = await this.getById(profesorId);
     if (!profesor) {
       throw new Error('Profesor no encontrado');
     }
@@ -205,66 +180,61 @@ class Profesor {
     const horasPorDia = {};
     let totalHoras = 0;
 
-    profesor.horarios.forEach(horario => {
-      const horaInicio = parseInt(horario.horaInicio);
-      const horaFin = parseInt(horario.horaFin);
-      const horas = horaFin - horaInicio;
+    for (const h of profesor.horarios) {
+      const inicio = parseInt(h.horaInicio, 10);
+      const fin    = parseInt(h.horaFin, 10);
+      const dur    = fin - inicio;
+      horasPorDia[h.dia] = (horasPorDia[h.dia] || 0) + dur;
+      totalHoras += dur;
+    }
 
-      if (!horasPorDia[horario.dia]) {
-        horasPorDia[horario.dia] = 0;
-      }
-      horasPorDia[horario.dia] += horas;
-      totalHoras += horas;
-    });
+    // Usar sólo maxHorasClase y maxHorasTotales
+    const maxClase = profesor.maxHorasClase;
+    const maxTotal = profesor.maxHorasTotales;
 
     return {
-      profesor: profesor,
-      horasPorDia: horasPorDia,
-      totalHoras: totalHoras,
-      maxHorasClase: profesor.maxHorasClase || profesor.maxHorasSemana || 20,
-      maxHorasTotales: profesor.maxHorasTotales || 40,
-      disponible: (profesor.maxHorasClase || profesor.maxHorasSemana || 20) - totalHoras
+      profesor,
+      horasPorDia,
+      totalHoras,
+      maxHorasClase: maxClase,
+      maxHorasTotales: maxTotal,
+      disponibleClase: maxClase - totalHoras,
+      disponibleTotal: maxTotal - totalHoras
     };
   }
 
   async checkConflictos(profesorId, nuevoHorario) {
-    const profesor = await this.getById(profesorId.toString());
+    const profesor = await this.getById(profesorId);
     if (!profesor) {
       throw new Error('Profesor no encontrado');
     }
 
     const conflictos = [];
 
-    // Verificar conflictos con horarios existentes del mismo profesor
-    profesor.horarios.forEach(horario => {
-      if (horario.dia === nuevoHorario.dia) {
-        const inicioExistente = parseInt(horario.horaInicio);
-        const finExistente = parseInt(horario.horaFin);
-        const inicioNuevo = parseInt(nuevoHorario.horaInicio);
-        const finNuevo = parseInt(nuevoHorario.horaFin);
-
-        if ((inicioNuevo < finExistente && finNuevo > inicioExistente)) {
+    // Conflictos de solapamiento
+    for (const h of profesor.horarios) {
+      if (h.dia === nuevoHorario.dia) {
+        const ie = parseInt(h.horaInicio, 10);
+        const fe = parseInt(h.horaFin, 10);
+        const in_ = parseInt(nuevoHorario.horaInicio, 10);
+        const fn  = parseInt(nuevoHorario.horaFin, 10);
+        if (in_ < fe && fn > ie) {
           conflictos.push({
             tipo: 'conflicto_horario',
-            mensaje: `Conflicto con horario existente: ${horario.dia} ${horario.horaInicio}-${horario.horaFin}`,
-            horarioExistente: horario
+            mensaje: `Conflicto: ${h.dia} ${h.horaInicio}-${h.horaFin}`,
+            horarioExistente: h
           });
         }
       }
-    });
+    }
 
-    // Verificar límite de horas de clase semanales
-    const cargaActual = await this.getCargaHoraria(profesorId);
-    const horasNuevoHorario = parseInt(nuevoHorario.horaFin) - parseInt(nuevoHorario.horaInicio);
-    const maxHorasClase = profesor.maxHorasClase || profesor.maxHorasSemana || 20;
-
-    if (cargaActual.totalHoras + horasNuevoHorario > maxHorasClase) {
+    // Conflictos de límite de horas de clase semanales
+    const carga = await this.getCargaHoraria(profesorId);
+    const horasNuevas = parseInt(nuevoHorario.horaFin, 10) - parseInt(nuevoHorario.horaInicio, 10);
+    if (carga.totalHoras + horasNuevas > profesor.maxHorasClase) {
       conflictos.push({
-        tipo: 'limite_horas',
-        mensaje: `Excede el límite de ${maxHorasClase} horas de clase semanales. Actual: ${cargaActual.totalHoras}, Nuevo: +${horasNuevoHorario}`,
-        horasActuales: cargaActual.totalHoras,
-        horasNuevas: horasNuevoHorario,
-        limite: maxHorasClase
+        tipo: 'limite_horas_clase',
+        mensaje: `Excede límite de clases (${profesor.maxHorasClase}h). Actuales: ${carga.totalHoras}, Nuevas: ${horasNuevas}`
       });
     }
 
@@ -272,4 +242,4 @@ class Profesor {
   }
 }
 
-module.exports = new Profesor(); 
+module.exports = new Profesor();
